@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="FoldText Lite - Aplikasi Catatan Personal Ultra-Ringan dengan Hierarki Folder & Smart Folding">
+  <!-- PWA Meta & Manifest -->
+  <link id="manifest-placeholder" rel="manifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FoldText">
+  <meta name="theme-color" content="#0b0f19">
+  <title>FoldText Lite</title>
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --bg-sidebar: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #f1f5f9;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --accent-light: #e0e7ff;
+      --accent-text: #3730a3;
+      --danger: #ef4444;
+      --success: #10b981;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    html.dark {
+      --bg-main: #0b0f19;
+      --bg-sidebar: #111827;
+      --bg-card: #1f2937;
+      --bg-input: #1f2937;
+      --border-color: #374151;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-light: rgba(99, 102, 241, 0.15);
+      --accent-text: #818cf8;
+      --danger: #f87171;
+      --success: #34d399;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* Layout Structure */
+    #app-container {
+      display: flex;
+      flex: 1;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Sidebar Navigation */
+    #sidebar {
+      width: 320px;
+      min-width: 280px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: transform 0.25s ease, width 0.2s;
+      z-index: 40;
+    }
+
+    .sidebar-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .brand span.badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 9999px;
+      background-color: var(--accent-light);
+      color: var(--accent-text);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .search-box {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.6rem;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Folder Filter Bar */
+    .folder-section {
+      padding: 0.75rem 1rem 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .folder-list {
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+      padding: 0 1rem 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      scrollbar-width: none;
+    }
+    .folder-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .folder-chip {
+      white-space: nowrap;
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-input);
+      color: var(--text-muted);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .folder-chip.active {
+      background-color: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+
+    /* Notes List */
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .note-item {
+      padding: 0.75rem 0.85rem;
+      border-radius: 0.65rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .note-item:hover {
+      background-color: var(--bg-input);
+    }
+    .note-item.active {
+      background-color: var(--accent-light);
+      border-color: var(--accent);
+    }
+
+    .note-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .note-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+    .note-item.active .note-title {
+      color: var(--accent-text);
+    }
+
+    .note-preview {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.35;
+    }
+
+    .note-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--bg-sidebar);
+    }
+
+    /* Main Editor Area */
+    #main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-card);
+    }
+
+    /* Top Toolbar */
+    .toolbar {
+      padding: 0.65rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background-color: var(--bg-sidebar);
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.45rem 0.8rem;
+      border-radius: 0.55rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+    .btn:hover {
+      background-color: var(--border-color);
+    }
+    .btn-primary {
+      background-color: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+    }
+    .btn-danger {
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-color: var(--danger);
+    }
+    .btn-icon {
+      padding: 0.45rem;
+      border-radius: 0.55rem;
+    }
+
+    /* Mode Switcher Tabs */
+    .mode-switch {
+      display: flex;
+      background-color: var(--bg-input);
+      padding: 0.2rem;
+      border-radius: 0.6rem;
+      border: 1px solid var(--border-color);
+    }
+    .mode-btn {
+      padding: 0.3rem 0.75rem;
+      border-radius: 0.45rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .mode-btn.active {
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Editor Container */
+    .editor-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Raw Textarea */
+    #note-editor {
+      width: 100%;
+      height: 100%;
+      padding: 1.5rem;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 1rem;
+      line-height: 1.65;
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      font-family: inherit;
+    }
+    #note-editor.font-mono {
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+    }
+
+    /* Smart Structure / Folding Container (Read Mode) */
+    #note-viewer {
+      width: 100%;
+      height: 100%;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+    #note-viewer.font-mono {
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+    }
+
+    /* Smart Folding Styles */
+    .fold-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.65rem;
+    }
+
+    .fold-details {
+      margin: 0.25rem 0;
+      border-radius: 0.4rem;
+      transition: background-color 0.15s;
+    }
+    .fold-summary {
+      cursor: pointer;
+      padding: 0.3rem 0.5rem;
+      border-radius: 0.4rem;
+      font-weight: 600;
+      user-select: none;
+      display: list-item;
+      color: var(--text-main);
+      transition: background-color 0.15s;
+    }
+    .fold-summary:hover {
+      background-color: var(--bg-input);
+    }
+    .fold-content {
+      padding-left: 1.25rem;
+      margin-top: 0.2rem;
+      border-left: 2px solid var(--border-color);
+    }
+
+    .fold-item {
+      padding: 0.25rem 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .fold-bullet {
+      color: var(--accent);
+      font-weight: bold;
+      user-select: none;
+    }
+    .fold-quote {
+      border-left: 3px solid var(--accent);
+      padding-left: 0.75rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin: 0.4rem 0;
+    }
+
+    /* Checkbox list */
+    .fold-checkbox {
+      cursor: pointer;
+      margin-top: 0.3rem;
+      accent-color: var(--accent);
+    }
+
+    /* Bottom Info Status Bar */
+    .statusbar {
+      padding: 0.4rem 1.25rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background-color: var(--bg-sidebar);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background-color: var(--success);
+    }
+    .status-dot.unsaved {
+      background-color: #f59e0b;
+    }
+
+    /* Modal Backdrop & Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 440px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .form-input {
+      padding: 0.55rem 0.75rem;
+      border-radius: 0.55rem;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Mobile Responsive Toggle */
+    #mobile-menu-btn {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .toolbar {
+        padding: 0.5rem 0.75rem;
+        gap: 0.4rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+      }
+      .toolbar::-webkit-scrollbar {
+        display: none;
+      }
+      .toolbar-left, .toolbar-right {
+        gap: 0.35rem;
+      }
+      .btn {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.75rem;
+      }
+      .mode-btn {
+        padding: 0.25rem 0.55rem;
+        font-size: 0.72rem;
+      }
+      .hide-xs {
+        display: none;
+      }
+      #sidebar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      #mobile-menu-btn {
+        display: inline-flex;
+      }
+      #sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 35;
+        display: none;
+      }
+      #sidebar-overlay.active {
+        display: block;
+      }
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+  <div id="app-container">
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span>📑</span>
+          <span>FoldText</span>
+          <span class="badge">Lite</span>
+        </div>
+        <div style="display: flex; gap: 0.35rem; align-items: center;">
+          <button id="pwa-install-btn" class="btn" style="display: none; background-color: var(--accent); color: white; padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="installPWA()" title="Pasang ke Layar Utama HP">
+            📲 Pasang
+          </button>
+          <button class="btn btn-primary" onclick="createNewNote()" title="Catatan Baru (Ctrl+N)">
+            <span>+</span>
+            <span>Baru</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="search-box">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 Cari judul atau isi catatan..." oninput="onSearchInput(this.value)">
+      </div>
+
+      <!-- Folder Section & Filter Chips -->
+      <div class="folder-section">
+        <span>Folder / Kategori</span>
+        <button class="btn btn-icon" onclick="openNewFolderModal()" title="Tambah Folder">+ 📁</button>
+      </div>
+      <div class="folder-list" id="folder-chips-container">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Notes List -->
+      <div class="notes-list" id="notes-list-container">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Sidebar Footer (Theme, Export, Import) -->
+      <div class="sidebar-footer">
+        <div style="display: flex; gap: 0.35rem;">
+          <button class="btn btn-icon" onclick="toggleTheme()" title="Ganti Tema Gelap/Terang" id="theme-btn">
+            🌙
+          </button>
+          <button class="btn btn-icon" onclick="toggleFont()" title="Ganti Font (Sans/Mono)" id="font-btn">
+            🔤
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.35rem;">
+          <button class="btn" style="padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="exportDatabase()" title="Ekspor Cadangan JSON">
+            Ekspor
+          </button>
+          <button class="btn" style="padding: 0.35rem 0.55rem; font-size: 0.75rem;" onclick="document.getElementById('import-file-input').click()" title="Impor Cadangan JSON">
+            Impor
+          </button>
+          <input type="file" id="import-file-input" style="display:none;" accept=".json" onchange="importDatabase(event)">
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN EDITOR & VIEWER -->
+    <main id="main-content">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button id="mobile-menu-btn" class="btn btn-icon" onclick="toggleSidebar()" title="Buka Daftar Catatan">
+            ☰
+          </button>
+          
+          <!-- Mode Switcher (Smart Fold & Edit Mode) -->
+          <div class="mode-switch">
+            <button id="mode-edit-btn" class="mode-btn active" onclick="setMode('edit')" title="Mode Tulis / Edit Catatan">
+              ✏️ Edit
+            </button>
+            <button id="mode-read-btn" class="mode-btn" onclick="setMode('read')" title="Mode Baca Smart Fold (Terkunci & Aman dari Salah Ketik)">
+              📖 Smart Fold
+            </button>
+          </div>
+
+          <!-- Folder Selector for active note -->
+          <select id="note-folder-select" class="btn" style="font-size: 0.75rem; padding: 0.35rem 0.5rem; max-width: 110px;" onchange="changeNoteFolder(this.value)">
+            <!-- Rendered dynamically -->
+          </select>
+        </div>
+
+        <div class="toolbar-right">
+          <!-- Tombol Tema & Font Langsung di Toolbar (Selalu Tampil di Android) -->
+          <button class="btn btn-icon" onclick="toggleTheme()" title="Ganti Tema Gelap/Terang" id="theme-btn-toolbar">
+            🌙
+          </button>
+          <button class="btn btn-icon" onclick="toggleFont()" title="Ganti Font (Sans/Mono)" id="font-btn-toolbar">
+            🔤
+          </button>
+
+          <!-- Tombol Sisipkan Waktu (Timestamp) -->
+          <button class="btn" onclick="insertTimestamp()" title="Sisipkan Tanggal & Waktu (Ctrl+T)">
+            🕒 <span class="hide-xs">Waktu</span>
+          </button>
+
+          <!-- Tombol Unduh Satuan (.txt / .md) -->
+          <button class="btn" onclick="downloadSingleNote('txt')" title="Unduh Catatan Ini (.txt)">
+            📥 <span class="hide-xs">.txt</span>
+          </button>
+          <button class="btn" onclick="downloadSingleNote('md')" title="Unduh Catatan Ini (.md)">
+            📥 <span class="hide-xs">.md</span>
+          </button>
+
+          <button class="btn btn-icon" onclick="openNoteMetaModal()" title="Ganti Ikon & Kategori">
+            🏷️
+          </button>
+          <button class="btn btn-danger btn-icon" onclick="deleteActiveNote()" title="Hapus Catatan">
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor Content -->
+      <div class="editor-wrapper">
+        <!-- Raw Textarea (Edit Mode) -->
+        <textarea id="note-editor" spellcheck="false" placeholder="Tuliskan catatan Anda di sini...&#10;&#10;Tips: Baris pertama otomatis menjadi Judul.&#10;Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipat di mode Smart Fold!" oninput="onEditorInput()"></textarea>
+
+        <!-- Smart Structure Container (Read / Fold Mode) -->
+        <div id="note-viewer" style="display: none;"></div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="statusbar">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="status-badge">
+            <span class="status-dot" id="save-indicator"></span>
+            <span id="save-status-text">Tersimpan</span>
+          </div>
+          <span style="opacity: 0.3;">|</span>
+          <span id="mode-status-badge" style="font-weight: 700; cursor: pointer; color: var(--accent-text);" onclick="toggleEditViewMode()" title="Klik untuk berganti mode">✏️ Mode Edit (Bisa Menulis)</span>
+        </div>
+        <div>
+          <span id="stat-words">0 kata</span> • <span id="stat-chars">0 karakter</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Tambah Folder Baru -->
+  <div class="modal-backdrop" id="folder-modal">
+    <div class="modal-dialog">
+      <h3 class="modal-title">Tambah Folder Baru</h3>
+      <div class="form-group">
+        <label class="form-label">Nama Folder</label>
+        <input type="text" id="folder-name-input" class="form-input" placeholder="Misal: Proyek, Ide, Harian">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ikon Emoji</label>
+        <input type="text" id="folder-icon-input" class="form-input" value="📁" maxlength="4">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('folder-modal')">Batal</button>
+        <button class="btn btn-primary" onclick="submitNewFolder()">Simpan Folder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Properti Catatan (Ikon & Kategori Tag) -->
+  <div class="modal-backdrop" id="note-meta-modal">
+    <div class="modal-dialog">
+      <h3 class="modal-title">Properti Catatan</h3>
+      <div class="form-group">
+        <label class="form-label">Ikon Catatan (Emoji)</label>
+        <input type="text" id="meta-icon-input" class="form-input" value="📝" maxlength="4">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tag Kategori</label>
+        <input type="text" id="meta-category-input" class="form-input" placeholder="Misal: Kerja, Urgent, Ide">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('note-meta-modal')">Batal</button>
+        <button class="btn btn-primary" onclick="saveNoteMeta()">Perbarui</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IndexedDB & Application Engine (Pure Vanilla JS) -->
+  <script>
+    /* ==========================================================================
+       1. DATABASE LAYER (IndexedDB: FoldTextDB v1)
+       ========================================================================== */
+    const DB_NAME = 'FoldTextDB';
+    const DB_VERSION = 1;
+    let db = null;
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains('folders')) {
+            const folderStore = dbInstance.createObjectStore('folders', { keyPath: 'id' });
+            folderStore.createIndex('name', 'name', { unique: false });
+          }
+          if (!dbInstance.objectStoreNames.contains('notes')) {
+            const noteStore = dbInstance.createObjectStore('notes', { keyPath: 'id' });
+            noteStore.createIndex('folder_id', 'folder_id', { unique: false });
+            noteStore.createIndex('updated_at', 'updated_at', { unique: false });
+          }
+        };
+        req.onsuccess = (e) => {
+          db = e.target.result;
+          resolve(db);
+        };
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    function dbGetAll(storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function dbPut(storeName, item) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        const req = store.put(item);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function dbDelete(storeName, id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        const req = store.delete(id);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function generateUUID() {
+      return 'ft_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
+    }
+
+    /* ==========================================================================
+       2. APP STATE & CONTROLLER
+       ========================================================================== */
+    let folders = [];
+    let notes = [];
+    let activeFolderId = 'all';
+    let activeNoteId = null;
+    let searchQuery = '';
+    let currentMode = 'edit'; // 'edit' or 'read'
+    let saveDebounceTimer = null;
+    let isMonospace = false;
+
+    // Elements cache
+    const editor = document.getElementById('note-editor');
+    const viewer = document.getElementById('note-viewer');
+    const folderChipsContainer = document.getElementById('folder-chips-container');
+    const notesListContainer = document.getElementById('notes-list-container');
+    const noteFolderSelect = document.getElementById('note-folder-select');
+    const saveIndicator = document.getElementById('save-indicator');
+    const saveStatusText = document.getElementById('save-status-text');
+    const statWords = document.getElementById('stat-words');
+    const statChars = document.getElementById('stat-chars');
+
+    async function initApp() {
+      await openDB();
+      initTheme();
+      initPWA();
+
+      folders = await dbGetAll('folders');
+      notes = await dbGetAll('notes');
+
+      // Seed Default Folder if empty
+      if (folders.length === 0) {
+        const defaultFolder = {
+          id: 'folder_general',
+          name: 'Umum',
+          icon: '📁',
+          created_at: Date.now()
+        };
+        await dbPut('folders', defaultFolder);
+        folders.push(defaultFolder);
+      }
+
+      // Seed Welcome Note if empty
+      if (notes.length === 0) {
+        const welcomeNote = {
+          id: generateUUID(),
+          folder_id: folders[0].id,
+          category: 'Pengenalan',
+          icon: '📝',
+          raw_content: `Panduan Cepat FoldText Lite
+Selamat datang di FoldText Lite! Aplikasi pencatat teks ultra-ringan dengan fitur folding non-destruktif.
+
+Fitur Utama:
+- Penyimpanan Offline Lokal IndexedDB
+  - Cepat, aman, dan tanpa batasan memori sempit
+  - Tidak merusak teks asli Anda (Non-destructive)
+- Struktur Pintar (Smart Structure & Folding):
+  - Baris pertama otomatis menjadi Judul
+  - Daftar dapat dilipat dengan tombol panah di mode Smart Fold
+  - Coba klik tombol "📖 Smart Fold" di toolbar atas!
+- Manajemen Folder & Kategori:
+  - Kelompokkan catatan sesuka Anda dengan ikon emoji
+  - Pencarian instan judul dan isi
+  - Ekspor dan Impor seluruh data dalam format JSON
+
+Daftar Tugas Contoh:
+- [x] Buka aplikasi FoldText Lite
+- [ ] Buat catatan baru dengan tombol (+ Baru)
+- [ ] Coba beralih antara mode Edit dan Smart Fold
+- [ ] Nikmati pengalaman mencatat tanpa lag!`,
+          created_at: Date.now(),
+          updated_at: Date.now()
+        };
+        await dbPut('notes', welcomeNote);
+        notes.push(welcomeNote);
+      }
+
+      // Sort notes by updated_at descending
+      notes.sort((a, b) => b.updated_at - a.updated_at);
+
+      renderFolderChips();
+      renderFolderSelectOptions();
+      renderNotesList();
+
+      if (notes.length > 0) {
+        selectNote(notes[0].id);
+      }
+    }
+
+    /* ==========================================================================
+       3. FOLDER & NOTE RENDERING
+       ========================================================================== */
+    function renderFolderChips() {
+      folderChipsContainer.innerHTML = '';
+
+      // All Folder Chip
+      const allChip = document.createElement('div');
+      allChip.className = `folder-chip ${activeFolderId === 'all' ? 'active' : ''}`;
+      allChip.innerHTML = `<span>📑</span><span>Semua (${notes.length})</span>`;
+      allChip.onclick = () => filterByFolder('all');
+      folderChipsContainer.appendChild(allChip);
+
+      folders.forEach(f => {
+        const count = notes.filter(n => n.folder_id === f.id).length;
+        const chip = document.createElement('div');
+        chip.className = `folder-chip ${activeFolderId === f.id ? 'active' : ''}`;
+        chip.innerHTML = `<span>${f.icon || '📁'}</span><span>${escapeHTML(f.name)} (${count})</span>`;
+        chip.onclick = () => filterByFolder(f.id);
+        folderChipsContainer.appendChild(chip);
+      });
+    }
+
+    function renderFolderSelectOptions() {
+      noteFolderSelect.innerHTML = '';
+      folders.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = `${f.icon || '📁'} ${f.name}`;
+        noteFolderSelect.appendChild(opt);
+      });
+    }
+
+    function filterByFolder(folderId) {
+      activeFolderId = folderId;
+      renderFolderChips();
+      renderNotesList();
+    }
+
+    function renderNotesList() {
+      notesListContainer.innerHTML = '';
+
+      let filtered = notes;
+      if (activeFolderId !== 'all') {
+        filtered = filtered.filter(n => n.folder_id === activeFolderId);
+      }
+
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(n => n.raw_content.toLowerCase().includes(q));
+      }
+
+      if (filtered.length === 0) {
+        notesListContainer.innerHTML = `
+          <div style="padding: 2rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+            Tidak ada catatan yang sesuai.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(note => {
+        const lines = note.raw_content.trim().split('\n');
+        const title = lines[0] || 'Catatan Kosong';
+        const preview = lines.slice(1).join(' ').trim() || 'Tidak ada baris teks lanjutan...';
+        const dateStr = new Date(note.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
+        const item = document.createElement('div');
+        item.className = `note-item ${note.id === activeNoteId ? 'active' : ''}`;
+        item.onclick = () => {
+          selectNote(note.id);
+          toggleSidebar(false);
+        };
+
+        item.innerHTML = `
+          <div class="note-item-header">
+            <span style="font-size: 0.95rem;">${note.icon || '📝'}</span>
+            <span class="note-title">${escapeHTML(title)}</span>
+          </div>
+          <div class="note-preview">${escapeHTML(preview)}</div>
+          <div class="note-meta">
+            <span>${note.category ? '🏷️ ' + escapeHTML(note.category) : ''}</span>
+            <span>${dateStr}</span>
+          </div>
+        `;
+        notesListContainer.appendChild(item);
+      });
+    }
+
+    function selectNote(noteId) {
+      activeNoteId = noteId;
+      const note = notes.find(n => n.id === noteId);
+      if (!note) return;
+
+      editor.value = note.raw_content;
+      noteFolderSelect.value = note.folder_id;
+      updateStats();
+      setSavedStatus(true);
+
+      if (currentMode === 'read' || currentMode === 'view') {
+        renderSmartFolding();
+      }
+
+      // Update UI active highlight
+      document.querySelectorAll('.note-item').forEach(el => el.classList.remove('active'));
+      renderNotesList();
+    }
+
+    async function createNewNote() {
+      const targetFolder = (activeFolderId !== 'all') ? activeFolderId : (folders[0] ? folders[0].id : 'folder_general');
+      const newNote = {
+        id: generateUUID(),
+        folder_id: targetFolder,
+        category: '',
+        icon: '📝',
+        raw_content: 'Catatan Baru\n',
+        created_at: Date.now(),
+        updated_at: Date.now()
+      };
+
+      await dbPut('notes', newNote);
+      notes.unshift(newNote);
+      renderFolderChips();
+      selectNote(newNote.id);
+      setMode('edit');
+      editor.focus();
+      editor.setSelectionRange(newNote.raw_content.length, newNote.raw_content.length);
+      toggleSidebar(false);
+    }
+
+    async function deleteActiveNote() {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      const title = note ? (note.raw_content.split('\n')[0] || 'Catatan Ini') : 'Catatan Ini';
+      if (!confirm(`Apakah Anda yakin ingin menghapus "${title}"?`)) return;
+
+      await dbDelete('notes', activeNoteId);
+      notes = notes.filter(n => n.id !== activeNoteId);
+      renderFolderChips();
+
+      if (notes.length > 0) {
+        selectNote(notes[0].id);
+      } else {
+        activeNoteId = null;
+        editor.value = '';
+        viewer.innerHTML = '';
+        renderNotesList();
+      }
+    }
+
+    async function changeNoteFolder(newFolderId) {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      if (note) {
+        note.folder_id = newFolderId;
+        note.updated_at = Date.now();
+        await dbPut('notes', note);
+        renderFolderChips();
+        renderNotesList();
+      }
+    }
+
+    /* ==========================================================================
+       4. AUTO-SAVE & INPUT HANDLING
+       ========================================================================== */
+    function onEditorInput() {
+      setSavedStatus(false);
+      updateStats();
+
+      clearTimeout(saveDebounceTimer);
+      saveDebounceTimer = setTimeout(saveCurrentNote, 500);
+    }
+
+    async function saveCurrentNote() {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      if (!note) return;
+
+      note.raw_content = editor.value;
+      note.updated_at = Date.now();
+
+      await dbPut('notes', note);
+
+      // Re-sort notes
+      notes.sort((a, b) => b.updated_at - a.updated_at);
+      renderFolderChips();
+      renderNotesList();
+      setSavedStatus(true);
+    }
+
+    function setSavedStatus(isSaved) {
+      if (isSaved) {
+        saveIndicator.classList.remove('unsaved');
+        saveStatusText.textContent = 'Tersimpan';
+      } else {
+        saveIndicator.classList.add('unsaved');
+        saveStatusText.textContent = 'Menyimpan...';
+      }
+    }
+
+    function updateStats() {
+      const text = editor.value;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const chars = text.length;
+
+      statWords.textContent = `${words} kata`;
+      statChars.textContent = `${chars} karakter`;
+    }
+
+    function onSearchInput(val) {
+      searchQuery = val;
+      renderNotesList();
+    }
+
+    /* ==========================================================================
+       5. NON-DESTRUCTIVE SMART FORMATTER (PARSER & FOLDING ENGINE)
+       ========================================================================== */
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function setMode(mode) {
+      const isRead = (mode === 'read' || mode === 'fold' || mode === 'view');
+      currentMode = isRead ? 'read' : 'edit';
+
+      const editBtn = document.getElementById('mode-edit-btn');
+      const readBtn = document.getElementById('mode-read-btn');
+      const modeStatusBadge = document.getElementById('mode-status-badge');
+
+      if (isRead) {
+        saveCurrentNote();
+        renderSmartFolding();
+        editor.style.display = 'none';
+        viewer.style.display = 'block';
+
+        if (readBtn) readBtn.classList.add('active');
+        if (editBtn) editBtn.classList.remove('active');
+
+        if (modeStatusBadge) {
+          modeStatusBadge.textContent = '🔒 Mode Smart Fold (Aman)';
+          modeStatusBadge.style.color = 'var(--success)';
+        }
+        showToast('📖 Mode Smart Fold Aktif (Terkunci & Aman)');
+      } else {
+        viewer.style.display = 'none';
+        editor.style.display = 'block';
+
+        if (editBtn) editBtn.classList.add('active');
+        if (readBtn) readBtn.classList.remove('active');
+
+        if (modeStatusBadge) {
+          modeStatusBadge.textContent = '✏️ Mode Edit (Bisa Menulis)';
+          modeStatusBadge.style.color = 'var(--accent-text)';
+        }
+        editor.focus();
+        showToast('✏️ Mode Edit Aktif (Siap Mengetik)');
+      }
+    }
+
+    function toggleEditViewMode() {
+      if (currentMode === 'edit') {
+        setMode('read');
+      } else {
+        setMode('edit');
+      }
+    }
+
+    let toastTimeout = null;
+    function showToast(text) {
+      let toast = document.getElementById('app-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.style.cssText = 'position:fixed;bottom:2.5rem;right:1.5rem;background:var(--bg-sidebar);border:1px solid var(--border-color);color:var(--text-main);padding:0.5rem 1rem;border-radius:0.75rem;font-size:0.8rem;font-weight:700;box-shadow:0 10px 25px rgba(0,0,0,0.2);transform:translateY(100px);opacity:0;transition:all 0.25s ease;z-index:999;pointer-events:none;display:flex;align-items:center;gap:0.5rem;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = text;
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.style.transform = 'translateY(100px)';
+        toast.style.opacity = '0';
+      }, 1800);
+    }
+
+    function renderSmartFolding() {
+      const raw = editor.value;
+      if (!raw.trim()) {
+        viewer.innerHTML = '<div style="color:var(--text-muted); padding:2rem; text-align:center;">Catatan masih kosong. Klik mode Edit untuk mengetik.</div>';
+        return;
+      }
+
+      const lines = raw.split('\n');
+      let html = '';
+      let titleRendered = false;
+
+      // Parse Indent and Tree structure
+      const parsedLines = lines.map((line, idx) => {
+        const indentMatch = line.match(/^(\s*)/);
+        const indentLevel = indentMatch ? indentMatch[1].replace(/\t/g, '  ').length : 0;
+        const trimmed = line.trim();
+        return {
+          lineIndex: idx,
+          raw: line,
+          indent: indentLevel,
+          trimmed: trimmed
+        };
+      });
+
+      let i = 0;
+      while (i < parsedLines.length) {
+        const item = parsedLines[i];
+
+        // First non-empty line becomes Title
+        if (!titleRendered && item.trimmed !== '') {
+          html += `<div class="fold-title">${escapeHTML(item.trimmed)}</div>`;
+          titleRendered = true;
+          i++;
+          continue;
+        }
+
+        if (item.trimmed === '') {
+          html += `<div style="height: 0.6rem;"></div>`;
+          i++;
+          continue;
+        }
+
+        // Check if item has children (next items with deeper indentation)
+        const hasChildren = (i + 1 < parsedLines.length) && (parsedLines[i + 1].indent > item.indent);
+
+        if (hasChildren) {
+          // Open collapsible details block
+          const summaryContent = formatLineContent(item.trimmed, item.lineIndex);
+          html += `<details class="fold-details" open><summary class="fold-summary">${summaryContent}</summary><div class="fold-content">`;
+          
+          const currentIndent = item.indent;
+          i++;
+
+          // Collect all sub-children
+          while (i < parsedLines.length && (parsedLines[i].indent > currentIndent || parsedLines[i].trimmed === '')) {
+            const childItem = parsedLines[i];
+            if (childItem.trimmed === '') {
+              html += `<div style="height: 0.4rem;"></div>`;
+            } else {
+              html += `<div class="fold-item">${formatLineContent(childItem.trimmed, childItem.lineIndex)}</div>`;
+            }
+            i++;
+          }
+          html += `</div></details>`;
+        } else {
+          // Normal formatted line
+          html += `<div class="fold-item">${formatLineContent(item.trimmed, item.lineIndex)}</div>`;
+          i++;
+        }
+      }
+
+      viewer.innerHTML = html;
+    }
+
+    function formatLineContent(trimmedLine, lineIndex) {
+      // 1. Interactive Checkbox list: - [ ] or - [x]
+      const checkMatch = trimmedLine.match(/^[-*]\s*\[([ xX])\]\s*(.*)$/);
+      if (checkMatch) {
+        const checked = checkMatch[1].toLowerCase() === 'x';
+        const text = checkMatch[2];
+        return `
+          <input type="checkbox" class="fold-checkbox" ${checked ? 'checked' : ''} onchange="toggleRawCheckbox(${lineIndex}, this.checked)">
+          <span style="${checked ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHTML(text)}</span>
+        `;
+      }
+
+      // 2. Bullet list: - or *
+      const bulletMatch = trimmedLine.match(/^[-*]\s+(.*)$/);
+      if (bulletMatch) {
+        return `<span class="fold-bullet">•</span><span>${escapeHTML(bulletMatch[1])}</span>`;
+      }
+
+      // 3. Numbered list: 1. or 2.
+      const numMatch = trimmedLine.match(/^(\d+\.)\s+(.*)$/);
+      if (numMatch) {
+        return `<span class="fold-bullet" style="font-size:0.85rem;">${numMatch[1]}</span><span>${escapeHTML(numMatch[2])}</span>`;
+      }
+
+      // 4. Blockquote: >
+      const quoteMatch = trimmedLine.match(/^>\s*(.*)$/);
+      if (quoteMatch) {
+        return `<div class="fold-quote">${escapeHTML(quoteMatch[1])}</div>`;
+      }
+
+      return `<span>${escapeHTML(trimmedLine)}</span>`;
+    }
+
+    // Toggle checkbox directly in raw text (Non-Destructive!)
+    function toggleRawCheckbox(lineIndex, isChecked) {
+      const lines = editor.value.split('\n');
+      if (lineIndex >= 0 && lineIndex < lines.length) {
+        const line = lines[lineIndex];
+        const newChar = isChecked ? 'x' : ' ';
+        lines[lineIndex] = line.replace(/\[([ xX])\]/, `[${newChar}]`);
+        editor.value = lines.join('\n');
+        saveCurrentNote();
+        renderSmartFolding();
+      }
+    }
+
+    /* ==========================================================================
+       6. MODAL & PROPERTIES MANAGEMENT
+       ========================================================================== */
+    function openNewFolderModal() {
+      document.getElementById('folder-name-input').value = '';
+      document.getElementById('folder-icon-input').value = '📁';
+      document.getElementById('folder-modal').classList.add('open');
+      document.getElementById('folder-name-input').focus();
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('open');
+    }
+
+    async function submitNewFolder() {
+      const name = document.getElementById('folder-name-input').value.trim();
+      const icon = document.getElementById('folder-icon-input').value.trim() || '📁';
+      if (!name) return;
+
+      const newFolder = {
+        id: 'f_' + Date.now().toString(36),
+        name: name,
+        icon: icon,
+        created_at: Date.now()
+      };
+
+      await dbPut('folders', newFolder);
+      folders.push(newFolder);
+      closeModal('folder-modal');
+      renderFolderChips();
+      renderFolderSelectOptions();
+    }
+
+    function openNoteMetaModal() {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      if (!note) return;
+
+      document.getElementById('meta-icon-input').value = note.icon || '📝';
+      document.getElementById('meta-category-input').value = note.category || '';
+      document.getElementById('note-meta-modal').classList.add('open');
+    }
+
+    async function saveNoteMeta() {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      if (!note) return;
+
+      note.icon = document.getElementById('meta-icon-input').value.trim() || '📝';
+      note.category = document.getElementById('meta-category-input').value.trim();
+      note.updated_at = Date.now();
+
+      await dbPut('notes', note);
+      closeModal('note-meta-modal');
+      renderNotesList();
+    }
+
+    /* ==========================================================================
+       7. IMPORT & EXPORT (FULL DATABASE JSON)
+       ========================================================================== */
+    async function exportDatabase() {
+      const allFolders = await dbGetAll('folders');
+      const allNotes = await dbGetAll('notes');
+
+      const data = {
+        app: "FoldText Lite",
+        version: 1,
+        exported_at: new Date().toISOString(),
+        folders: allFolders,
+        notes: allNotes
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `foldtext_backup_${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function importDatabase(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const json = JSON.parse(text);
+
+        if (!json.folders || !json.notes) {
+          alert('Format file cadangan tidak valid.');
+          return;
+        }
+
+        if (confirm(`Impor ${json.notes.length} catatan dan ${json.folders.length} folder? Data yang ada akan digabungkan.`)) {
+          for (const f of json.folders) {
+            await dbPut('folders', f);
+          }
+          for (const n of json.notes) {
+            await dbPut('notes', n);
+          }
+
+          folders = await dbGetAll('folders');
+          notes = await dbGetAll('notes');
+          notes.sort((a, b) => b.updated_at - a.updated_at);
+
+          renderFolderChips();
+          renderFolderSelectOptions();
+          renderNotesList();
+          if (notes.length > 0) selectNote(notes[0].id);
+
+          alert('Impor database berhasil!');
+        }
+      } catch (err) {
+        console.error('Import error:', err);
+        alert('Gagal mengimpor file: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    }
+
+    /* ==========================================================================
+       8. THEME & FONT SWITCHER
+       ========================================================================== */
+    function initTheme() {
+      const savedTheme = localStorage.getItem('foldtext_theme') || 'dark';
+      const isDark = savedTheme === 'dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      const icon = isDark ? '☀️' : '🌙';
+      const btn1 = document.getElementById('theme-btn');
+      const btn2 = document.getElementById('theme-btn-toolbar');
+      if (btn1) btn1.textContent = icon;
+      if (btn2) btn2.textContent = icon;
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('foldtext_theme', isDark ? 'dark' : 'light');
+      const icon = isDark ? '☀️' : '🌙';
+      const btn1 = document.getElementById('theme-btn');
+      const btn2 = document.getElementById('theme-btn-toolbar');
+      if (btn1) btn1.textContent = icon;
+      if (btn2) btn2.textContent = icon;
+      showToast(isDark ? '🌙 Tema Gelap Aktif' : '☀️ Tema Terang Aktif');
+    }
+
+    function toggleFont() {
+      isMonospace = !isMonospace;
+      editor.classList.toggle('font-mono', isMonospace);
+      viewer.classList.toggle('font-mono', isMonospace);
+      const icon = isMonospace ? '💻' : '🔤';
+      const btn1 = document.getElementById('font-btn');
+      const btn2 = document.getElementById('font-btn-toolbar');
+      if (btn1) btn1.textContent = icon;
+      if (btn2) btn2.textContent = icon;
+      showToast(isMonospace ? '💻 Font Monospace Aktif' : '🔤 Font Sans-serif Aktif');
+    }
+
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+
+      sidebar.classList.toggle('open', isOpen);
+      overlay.classList.toggle('active', isOpen);
+    }
+
+    /* ==========================================================================
+       9. TIMESTAMPING, EKSPOR SATUAN & PWA ENGINE
+       ========================================================================== */
+    function insertTimestamp() {
+      const now = new Date();
+      const YYYY = now.getFullYear();
+      const MM = String(now.getMonth() + 1).padStart(2, '0');
+      const DD = String(now.getDate()).padStart(2, '0');
+      const HH = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const stamp = `[${YYYY}-${MM}-${DD} ${HH}:${mm}] `;
+
+      if (currentMode === 'read') {
+        setMode('edit');
+      }
+
+      const start = editor.selectionStart;
+      const end = editor.selectionEnd;
+      const val = editor.value;
+
+      editor.value = val.substring(0, start) + stamp + val.substring(end);
+      editor.selectionStart = editor.selectionEnd = start + stamp.length;
+      editor.focus();
+      onEditorInput();
+    }
+
+    function downloadSingleNote(format = 'txt') {
+      if (!activeNoteId) return;
+      const note = notes.find(n => n.id === activeNoteId);
+      if (!note) return;
+
+      const raw = editor.value;
+      const firstLine = raw.trim().split('\n')[0] || 'catatan';
+      const cleanTitle = firstLine.replace(/[/\\?%*:|"<>]/g, '').trim().substring(0, 50) || 'catatan';
+      const filename = `${cleanTitle}.${format}`;
+
+      const mimeType = format === 'md' ? 'text/markdown' : 'text/plain';
+      const blob = new Blob([raw], { type: `${mimeType};charset=utf-8` });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    let deferredPrompt = null;
+
+    function initPWA() {
+      const manifestData = {
+        name: "FoldText Lite",
+        short_name: "FoldText",
+        description: "Aplikasi Catatan Personal Ultra-Ringan dengan Hierarki Folder & Smart Folding",
+        start_url: "./foldtext.html",
+        display: "standalone",
+        background_color: "#0b0f19",
+        theme_color: "#6366f1",
+        icons: [
+          {
+            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text y='.7em' x='50%' text-anchor='middle' font-size='60'>📑</text></svg>",
+            sizes: "192x192 512x512",
+            type: "image/svg+xml"
+          }
+        ]
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+      const manifestLink = document.getElementById('manifest-placeholder');
+      if (manifestLink) {
+        manifestLink.setAttribute('href', URL.createObjectURL(manifestBlob));
+      }
+
+      if ('serviceWorker' in navigator) {
+        const swCode = `
+          const CACHE_NAME = 'foldtext-pwa-v1';
+          self.addEventListener('install', (e) => self.skipWaiting());
+          self.addEventListener('activate', (e) => self.clients.claim());
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(
+              caches.match(e.request).then((res) => res || fetch(e.request).catch(() => caches.match(e.request)))
+            );
+          });
+        `;
+        const swBlob = new Blob([swCode], { type: 'text/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(err => {
+          console.log('SW Note:', err);
+        });
+      }
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) installBtn.style.display = 'inline-flex';
+      });
+    }
+
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+          const installBtn = document.getElementById('pwa-install-btn');
+          if (installBtn) installBtn.style.display = 'none';
+        });
+      }
+    }
+
+    /* ==========================================================================
+       10. KEYBOARD SHORTCUTS & TAB INDENT
+       ========================================================================== */
+    window.addEventListener('keydown', (e) => {
+      // Ctrl+S: Manual Save
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveCurrentNote();
+      }
+      // Ctrl+E: Toggle Mode
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        toggleEditViewMode();
+      }
+      // Ctrl+N: New Note
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        createNewNote();
+      }
+      // Ctrl+F: Search Focus
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        document.getElementById('search-input').focus();
+      }
+      // Ctrl+T: Insert Timestamp
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        insertTimestamp();
+      }
+    });
+
+    // Support Tab Indentation in Textarea
+    editor.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+        editor.selectionStart = editor.selectionEnd = start + 2;
+        onEditorInput();
+      }
+    });
+
+    // Start App
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
