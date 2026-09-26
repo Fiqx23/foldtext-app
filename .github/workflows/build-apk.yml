@@ -1,0 +1,58 @@
+name: Build FoldText APK
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Paketkan File Web & Hasilkan Ikon Android
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
+          mkdir -p www
+          rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='www' --exclude='assets' ./ www/
+          
+          # Inisialisasi Paket FoldText Lite
+          npx cap init "FoldText" "com.fiq.foldtext" --web-dir www
+          npx cap add android
+          
+          # Hasilkan seluruh variasi ikon adaptif dengan latar gelap khas FoldText
+          npx @capacitor/assets generate --android --iconBackgroundColor '#0b0f19'
+          
+          # Cegah konflik duplikasi pustaka Kotlin
+          echo "configurations.all { exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7' }" >> android/app/build.gradle
+          echo "configurations.all { exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8' }" >> android/app/build.gradle
+
+      - name: Kompilasi APK (Assemble Debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Unggah Hasil APK ke GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: FoldText-App-Release
+          path: android/app/build/outputs/apk/debug/app-debug.apk
