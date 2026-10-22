@@ -1,16 +1,23 @@
-name: Build FoldText APK
+name: Build FoldText APK (Debug)
 
 on:
   push:
     branches: [ main, master ]
     paths-ignore:
-      - '.github/**'
       - 'README.md'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: foldtext-apk-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Source Code
@@ -19,40 +26,68 @@ jobs:
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '21'
+          cache: gradle
 
-      - name: Paketkan File Web & Hasilkan Ikon Android
+      - name: Validate Web Source
+        shell: bash
         run: |
+          set -euo pipefail
+          test -s index.html
+          test -s assets/icon.png
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)]
+            .map(match => match[1])
+            .filter(script => script.trim().length > 0);
+          if (scripts.length === 0) {
+            throw new Error('No inline application script found in index.html');
+          }
+          scripts.forEach((script, index) => {
+            new Function(script);
+            console.log(`Inline script ${index + 1}: syntax OK`);
+          });
+          console.log(`Validated ${scripts.length} inline script(s).`);
+          NODE
+
+      - name: Package Web App and Generate Android Icons
+        shell: bash
+        run: |
+          set -euo pipefail
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/assets
+          npm install --save-exact @capacitor/core@8.5.3 @capacitor/android@8.5.3
+          npm install --save-dev --save-exact @capacitor/cli@8.5.3 @capacitor/assets@3.0.5
           mkdir -p www
           rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='www' --exclude='assets' ./ www/
-          
-          # Inisialisasi Paket FoldText Lite
+
           npx cap init "FoldText" "com.fiq.foldtext" --web-dir www
           npx cap add android
-          
-          # Hasilkan seluruh variasi ikon adaptif dengan latar gelap khas FoldText
           npx @capacitor/assets generate --android --iconBackgroundColor '#0b0f19'
-          
-          # Cegah konflik duplikasi pustaka Kotlin
+
+          # Keep the existing Gradle compatibility exclusions.
           echo "configurations.all { exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7' }" >> android/app/build.gradle
           echo "configurations.all { exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8' }" >> android/app/build.gradle
 
-      - name: Kompilasi APK (Assemble Debug)
+      - name: Compile Debug APK
+        shell: bash
         run: |
+          set -euo pipefail
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew --no-daemon assembleDebug
+          test -s app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Unggah Hasil APK ke GitHub Artifacts
+      - name: Upload Debug APK as GitHub Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FoldText-App-Release
+          name: FoldText-App-Debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
