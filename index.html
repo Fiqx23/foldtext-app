@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- saved from url=(0098)file:///C:/Users/wahyu%20candra%20saputra/Downloads/Download/FOLDTEXT/FoldText%20Lite%20FINAL.html -->
-<html lang="id" class="dark" style="--editor-font-size: 16px;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="FoldText Lite - Aplikasi Catatan Personal Ultra-Ringan dengan Hierarki Folder &amp; Smart Folding">
+  <meta name="description" content="FoldText Lite - Aplikasi Catatan Personal Ultra-Ringan dengan Hierarki Folder & Smart Folding">
   <!-- PWA Meta & Manifest -->
-  <link id="manifest-placeholder" rel="manifest" href="blob:null/c1bf4e70-9daa-4e82-8ff6-bd66ea6257ac">
+  <link id="manifest-placeholder" rel="manifest">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,7 +13,7 @@
   <meta name="theme-color" content="#0b0f19">
   <title>FoldText Lite</title>
   <!-- Supabase JS Client v2 (Phase A: Cloud Foundation) -->
-  <script src="./FoldText Lite_files/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg-main: #f8fafc;
@@ -80,7 +80,6 @@
       position: relative;
     }
 
-    /* Sidebar Navigation */
     #sidebar {
       width: 340px;
       min-width: 280px;
@@ -193,7 +192,6 @@
       border-color: var(--accent);
     }
 
-    /* Notes List */
     .notes-list {
       flex: 1;
       overflow-y: auto;
@@ -264,7 +262,6 @@
       margin-top: 0.15rem;
     }
 
-    /* Sidebar Footer */
     .sidebar-footer {
       padding: 0.75rem 1rem;
       border-top: 1px solid var(--border-color);
@@ -355,7 +352,6 @@
       display: block;
     }
 
-    /* Mode Switcher Tabs */
     .mode-switch {
       display: flex;
       background-color: var(--bg-input);
@@ -435,7 +431,6 @@
       font-family: var(--font-casual) !important;
     }
 
-    /* Text Alignment Presets (Left, Center, Right, Justify) */
     #note-editor.align-left, 
     #note-viewer.align-left,
     #note-viewer.align-left .fold-title,
@@ -496,7 +491,6 @@
       text-align-last: left;
     }
 
-    /* Smart Folding Styles */
     .fold-title {
       font-size: 1.75rem;
       font-weight: 800;
@@ -573,7 +567,6 @@
       accent-color: var(--accent);
     }
 
-    /* Bottom Info Status Bar */
     .statusbar {
       padding: 0.4rem 1.25rem;
       border-top: 1px solid var(--border-color);
@@ -670,7 +663,6 @@
       margin-top: 0.5rem;
     }
 
-    /* Mobile Responsive Toggle */
     #mobile-menu-btn {
       display: none;
       font-size: 1.35rem;
@@ -763,7 +755,6 @@
       background: var(--text-muted);
     }
 
-    /* Context Menu (Desktop Right-Click & Mobile Long-Press) */
     .context-menu {
       position: fixed;
       display: none;
@@ -887,11 +878,6 @@
       font-size: 0.75rem;
     }
 
-    /* ======================================================================
-       FoldText Lite UI Polish v12
-       CSS-only pass: layout, spacing, touch targets, and responsive behavior.
-       Application markup, handlers, storage, conflict, and cloud logic untouched.
-       ====================================================================== */
     #app-container,
     #sidebar,
     #main-content,
@@ -1100,10 +1086,6 @@
       }
     }
 
-
-
-    /* Phase 2.4.1: layout polish based on the reviewed HTML structure.
-       These rules style existing controls only; application logic is unchanged. */
     .sidebar-header {
       min-width: 0;
     }
@@ -1268,36 +1250,77 @@
       }
     }
 
-  
-
     /* Sidebar toggle: presentation-only controls; existing note/cloud logic is untouched. */
     .sidebar-toggle-control { flex: 0 0 auto; }
-    /* Footer layout only: anchor the primary New Note action at the right edge. */
+
+    /* Footer layout: 3 zona seimbang (Ikon Kiri - Ekspor/Impor Tengah - Baru Kanan) */
     .sidebar-footer {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      flex-wrap: nowrap;
-      gap: 0.22rem;
-      padding: 0.45rem 0.3rem;
+      justify-content: space-between;
+      flex-wrap: nowrap !important;
+      padding: 0.45rem 0.65rem;
+      overflow: hidden;
+      gap: 0.35rem;
     }
+
+    .sidebar-preference-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex: 0 0 auto;
+    }
+
+    .sidebar-preference-actions > .btn-icon {
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      min-height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    .sidebar-preference-actions > .btn-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .sidebar-backup-actions {
       display: flex;
       align-items: center;
-      flex: 0 1 auto;
+      justify-content: center;
+      flex: 1 1 auto;
       min-width: 0;
-      gap: 0.2rem;
+      gap: 0.35rem;
+      margin: 0 auto;
+      padding: 0 0.35rem;
     }
-    .sidebar-preference-actions { gap: 0.2rem; flex: 0 0 auto; }
-    .sidebar-backup-actions > .btn { padding: 0.34rem 0.36rem; }
+
+    .sidebar-backup-actions > .btn:not(.btn-icon) {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.74rem;
+      white-space: nowrap;
+      height: 30px;
+      min-height: 30px;
+      line-height: 1;
+    }
+
     #sidebar-new-note-btn {
       flex: 0 0 auto;
-      margin-left: auto;
-      min-height: 36px;
-      padding: 0.42rem 0.5rem;
-      font-size: 0.78rem;
+      margin-left: 0;
+      height: 30px;
+      min-height: 30px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.76rem;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
+
     .sidebar-reopen-control {
       display: inline-flex;
       position: static;
@@ -1309,135 +1332,41 @@
     }
     .sidebar-reopen-control[hidden] { display: none !important; }
     #app-container.sidebar-collapsed #sidebar { display: none; }
+
     @media (max-width: 768px) {
-      .sidebar-footer { gap: 0.18rem; padding-left: 0.25rem; padding-right: 0.25rem; }
-      .sidebar-backup-actions { gap: 0.16rem; }
-      .sidebar-backup-actions > .btn { padding-left: 0.3rem; padding-right: 0.3rem; }
-      #sidebar-new-note-btn { min-height: 36px; padding: 0.42rem 0.42rem; }
+      .sidebar-footer {
+        padding: 0.4rem 0.5rem;
+        gap: 0.25rem;
+        flex-wrap: nowrap !important;
+      }
+      .sidebar-backup-actions {
+        gap: 0.25rem;
+        padding: 0 0.25rem;
+      }
+      .sidebar-preference-actions { gap: 0.25rem; }
+      .sidebar-preference-actions > .btn-icon {
+        width: 28px;
+        min-width: 28px;
+        height: 28px;
+        min-height: 28px;
+        font-size: 0.88rem;
+      }
+      .sidebar-backup-actions > .btn:not(.btn-icon) {
+        height: 28px;
+        min-height: 28px;
+        padding: 0 0.35rem;
+        font-size: 0.7rem;
+      }
+      #sidebar-new-note-btn {
+        height: 28px;
+        min-height: 28px;
+        padding: 0 0.45rem;
+        font-size: 0.72rem;
+        margin-left: 0;
+      }
       #app-container.sidebar-collapsed #sidebar { display: flex; }
       #app-container.sidebar-collapsed #sidebar:not(.open) { transform: translateX(-100%); }
     }
-
-  
-
-    /* Refined compact sidebar footer to match the supplied reference. */
-    @media (max-width: 768px) {
-      .sidebar-footer {
-        box-sizing: border-box;
-        width: 100%;
-        min-height: 42px;
-        height: 42px;
-        padding: 4px 13px 4px 7px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        gap: 0;
-        overflow: hidden;
-      }
-
-      .sidebar-backup-actions {
-        display: flex;
-        align-items: center;
-        flex: 0 0 auto;
-        min-width: 0;
-        gap: 7px;
-        overflow: visible;
-      }
-
-      .sidebar-preference-actions {
-        display: flex;
-        align-items: center;
-        flex: 0 0 auto;
-        gap: 6px;
-      }
-
-      .sidebar-preference-actions > .btn-icon {
-        box-sizing: border-box;
-        width: 28px;
-        min-width: 28px;
-        max-width: 28px;
-        height: 28px;
-        min-height: 28px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 28px;
-        border-radius: 7px;
-        line-height: 1;
-      }
-
-      .sidebar-preference-actions > .btn-icon svg {
-        width: 16px;
-        height: 16px;
-      }
-
-      .sidebar-backup-actions > .btn:not(.btn-icon) {
-        box-sizing: border-box;
-        height: 28px;
-        min-height: 28px;
-        padding: 0 4px;
-        font-size: 0.72rem;
-        line-height: 1;
-        white-space: nowrap;
-        justify-content: center;
-        flex: 0 0 auto;
-        border-radius: 7px;
-      }
-
-      #sidebar-new-note-btn {
-        box-sizing: border-box;
-        flex: 0 0 auto;
-        margin-left: 8px;
-        min-width: 44px;
-        width: auto;
-        height: 28px;
-        min-height: 28px;
-        padding: 0 8px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        font-size: 0.74rem;
-        line-height: 1;
-        white-space: nowrap;
-        border-radius: 7px;
-      }
-
-      #sidebar-new-note-btn > span:first-child {
-        font-size: 0.95rem;
-        line-height: 1;
-      }
-
-      #sidebar-new-note-btn > span:last-child {
-        line-height: 1;
-      }
-    }
-
-    @media (max-width: 340px) {
-      .sidebar-footer {
-        padding-right: 9px;
-        padding-left: 6px;
-      }
-
-      .sidebar-backup-actions,
-      .sidebar-preference-actions {
-        gap: 5px;
-      }
-
-      .sidebar-backup-actions > .btn:not(.btn-icon) {
-        padding-left: 3px;
-        padding-right: 3px;
-      }
-
-      #sidebar-new-note-btn {
-        margin-left: 6px;
-        padding-left: 6px;
-        padding-right: 6px;
-      }
-    }
-
   </style>
 </head>
 <body>
@@ -1479,74 +1408,34 @@
         <span>Folder / Kategori</span>
         <button class="btn btn-icon" onclick="openNewFolderModal()" title="Tambah Folder" aria-label="Tambah folder">+ 📁</button>
       </div>
-      <div class="folder-list" id="folder-chips-container"><div class="folder-chip active"><span>📑</span><span>Semua (4)</span></div><div class="folder-chip " title="Klik untuk memfilter. Klik kanan / tahan untuk opsi."><span>01</span><span>Notes (3)</span></div><div class="folder-chip " title="Klik untuk memfilter. Klik kanan / tahan untuk opsi."><span>📁</span><span>Umum (1)</span></div></div>
+      <div class="folder-list" id="folder-chips-container">
+        <!-- Rendered via JS -->
+      </div>
 
       <!-- Notes List -->
-      <div class="notes-list" id="notes-list-container"><div class="note-item active" title="Klik untuk membuka. Klik kanan / tahan untuk opsi.">
-          <div class="note-item-header">
-            <span style="font-size: 0.95rem;">📝</span>
-            <span class="note-title" dir="auto">log [2026-10-19 23:28] </span>
-          </div>
-          <div class="note-preview" dir="auto">saya melakukan pengembangan fintrack dan foldtext serta berencana membuat game. saya harap bisa selesai.</div>
-          <div class="note-meta">
-            <span></span>
-            <span>20 Okt</span>
-          </div>
-        </div><div class="note-item " title="Klik untuk membuka. Klik kanan / tahan untuk opsi.">
-          <div class="note-item-header">
-            <span style="font-size: 0.95rem;">📝</span>
-            <span class="note-title" dir="auto">VIVO Backup Strategi</span>
-          </div>
-          <div class="note-preview" dir="auto">- Backup musik  - Backup ASMR - Perbaiki Masalah Hacking - Selesai.</div>
-          <div class="note-meta">
-            <span></span>
-            <span>20 Okt</span>
-          </div>
-        </div><div class="note-item " title="Klik untuk membuka. Klik kanan / tahan untuk opsi.">
-          <div class="note-item-header">
-            <span style="font-size: 0.95rem;">📝</span>
-            <span class="note-title" dir="auto">Catatan Penguji Pada Sempro</span>
-          </div>
-          <div class="note-preview" dir="auto">peran desa, catat kepala desa pelanggar, relevansikan dengan pelanggar yang telah tertangkap,set mendalam, maqasid non muslim 6 1nya lingkungan, faktor. landasan filosofis, prinsip syariah tetap masukkan, hapus pengelolaan.   ddjkhjhfkdfh deidhffhiefh ehfoehfoefh</div>
-          <div class="note-meta">
-            <span></span>
-            <span>20 Okt</span>
-          </div>
-        </div><div class="note-item " title="Klik untuk membuka. Klik kanan / tahan untuk opsi.">
-          <div class="note-item-header">
-            <span style="font-size: 0.95rem;">📝</span>
-            <span class="note-title" dir="auto">Itell Backup Strategi</span>
-          </div>
-          <div class="note-preview" dir="auto">Google Akun + Any Pass (D@fiqlucky73) - dafiqlucky@gmail.com - tololkali99@gmail.com - arsasisa11@gmail.com(maniso789) - dafiqafr@gmail.com(dafiqrahman7) - dafiqamir77@gmail.com (D@fiqlucky73) Facebook &amp; JKN. - dafiqafr4422@gmail.com(dafiqafr4422) ? - romaedi42@gmail.com (dafiqganteng) - dianasandi995@gmail.com [D@fiqcoc123] - jackreeves512@gmail.com [J@ckreeves512coc] - coc116776@gmail.com [@KUNCOC116776] - 085821231966 + 085650809385 Backup Storage File &amp; Aplikasi - Bank Apk (BSI, DANA, SHOPEE, JAGO)</div>
-          <div class="note-meta">
-            <span></span>
-            <span>12 Okt</span>
-          </div>
-        </div></div>
+      <div class="notes-list" id="notes-list-container">
+        <!-- Rendered via JS -->
+      </div>
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
+        <div class="sidebar-preference-actions">
+          <button class="btn btn-icon" onclick="toggleTheme()" title="Ganti Tema Gelap/Terang" id="theme-btn" aria-label="Ganti tema">
+            🌙
+          </button>
+          <button class="btn btn-icon" onclick="toggleFont()" title="Ganti Jenis Font (Sans / Serif / Mono / Casual)" id="font-btn" aria-label="Ganti font">
+            🔤
+          </button>
+          <button class="btn btn-icon" onclick="toggleAlign()" title="Perataan Teks (Kiri / Tengah / Kanan / Justify)" id="align-btn" aria-label="Ubah perataan teks">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="13" y2="12"></line><line x1="3" y1="18" x2="19" y2="18"></line></svg>
+          </button>
+        </div>
         <div class="sidebar-backup-actions">
-          <div class="sidebar-preference-actions">
-            <button class="btn btn-icon" onclick="toggleTheme()" title="Ganti Tema Gelap/Terang" id="theme-btn" aria-label="Ganti tema" style="
-    margin-right: 4px;
-">☀️</button>
-            <button class="btn btn-icon" onclick="toggleFont()" title="Font: Sans-serif (Klik untuk ganti)" id="font-btn" aria-label="Ganti font" style="
-    margin-right: 4px;
-">🔤</button>
-            <button class="btn btn-icon" onclick="toggleAlign()" title="Perataan: Rata Kanan-Kiri (Justify) (Klik untuk ganti)" id="align-btn" aria-label="Ubah perataan teks"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
-          </div>
-          <button class="btn" onclick="exportDatabase()" title="Ekspor Cadangan JSON" style="
-    margin-left: 9px;
-">Ekspor</button>
-          <button class="btn" onclick="document.getElementById('import-file-input').click()" title="Impor Cadangan JSON" style="
-    margin-left: 4px;
-">Impor</button>
+          <button class="btn" onclick="exportDatabase()" title="Ekspor Cadangan JSON">Ekspor</button>
+          <button class="btn" onclick="document.getElementById('import-file-input').click()" title="Impor Cadangan JSON">Impor</button>
           <input type="file" id="import-file-input" style="display:none;" accept=".json" onchange="importDatabase(event)">
         </div>
-        <button id="sidebar-new-note-btn" class="btn btn-primary" onclick="createNewNote()" title="Catatan Baru (Ctrl+N)" style="
-    margin-left: 9px;
-">
+        <button id="sidebar-new-note-btn" class="btn btn-primary" onclick="createNewNote()" title="Catatan Baru (Ctrl+N)">
           <span>+</span>
           <span>Baru</span>
         </button>
@@ -1558,7 +1447,7 @@
       <!-- Toolbar -->
       <div class="toolbar">
         <div class="toolbar-left">
-          <button id="sidebar-reopen-btn" class="btn btn-icon sidebar-reopen-control" onclick="toggleSidebar(true)" title="Buka sidebar" aria-label="Buka sidebar" hidden="">
+          <button id="sidebar-reopen-btn" class="btn btn-icon sidebar-reopen-control" onclick="toggleSidebar(true)" title="Buka sidebar" aria-label="Buka sidebar" hidden>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="18" height="18" rx="2"></rect>
               <line x1="9" y1="3" x2="9" y2="21"></line>
@@ -1577,23 +1466,25 @@
             <button id="mode-edit-btn" class="mode-btn active" onclick="setMode('edit')" title="Mode Tulis / Edit Catatan">
               ✏️ Edit
             </button>
-            <button id="mode-read-btn" class="mode-btn" onclick="setMode('read')" title="Mode Baca Smart Fold (Terkunci &amp; Aman dari Salah Ketik)">
+            <button id="mode-read-btn" class="mode-btn" onclick="setMode('read')" title="Mode Baca Smart Fold (Terkunci & Aman dari Salah Ketik)">
               📖 Smart Fold
             </button>
           </div>
 
-          <button id="btn-cloud-auth-toolbar" class="btn" onclick="openCloudAuthModal()" title="Terhubung: dafiqamir77@gmail.com (User ID: e62d94c0-d324-4a29-a2f6-cdef7833ab60)" style="border-color: var(--accent);">
-            <span id="cloud-auth-icon-tb">👤</span>
-            <span id="cloud-auth-label-tb" class="hide-xs">dafiqam..</span>
+          <button id="btn-cloud-auth-toolbar" class="btn" onclick="openCloudAuthModal()" title="Akun Cloud & Autentikasi">
+            <span id="cloud-auth-icon-tb">☁️</span>
+            <span id="cloud-auth-label-tb" class="hide-xs">Cloud</span>
           </button>
 
-          <select id="note-folder-select" class="btn toolbar-folder-select" onchange="changeNoteFolder(this.value)" aria-label="Folder catatan aktif"><option value="f_muyoc550">01 Notes</option><option value="folder_general">📁 Umum</option></select>
+          <select id="note-folder-select" class="btn toolbar-folder-select" onchange="changeNoteFolder(this.value)" aria-label="Folder catatan aktif">
+            <!-- Rendered dynamically -->
+          </select>
 
-          <button class="btn" onclick="insertTimestamp()" title="Sisipkan Tanggal &amp; Waktu (Ctrl+T)">
+          <button class="btn" onclick="insertTimestamp()" title="Sisipkan Tanggal & Waktu (Ctrl+T)">
             🕒 <span class="hide-xs">Waktu</span>
           </button>
 
-          <button class="btn toolbar-tag-btn" onclick="openNoteMetaModal()" title="Ganti Ikon &amp; Kategori">
+          <button class="btn toolbar-tag-btn" onclick="openNoteMetaModal()" title="Ganti Ikon & Kategori">
             🏷️ <span class="hide-xs">Tag</span>
           </button>
 
@@ -1620,11 +1511,8 @@
 
       <!-- Editor Content -->
       <div class="editor-wrapper">
-        <textarea id="note-editor" dir="auto" spellcheck="false" placeholder="Tuliskan catatan Anda di sini...
-
-Tips: Baris pertama otomatis menjadi Judul.
-Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipat di mode Smart Fold!" oninput="onEditorInput()" class="font-sans align-justify" style="display: block;"></textarea>
-        <div id="note-viewer" dir="auto" style="display: none;" class="font-sans align-justify"><div class="fold-title" dir="auto">log [2026-10-19 23:28]</div><div class="fold-item fold-plain" dir="auto"><span class="fold-text">saya melakukan pengembangan fintrack dan foldtext serta berencana membuat game.</span></div><div class="fold-item fold-plain" dir="auto"><span class="fold-text">saya harap bisa selesai.</span></div></div>
+        <textarea id="note-editor" dir="auto" spellcheck="false" placeholder="Tuliskan catatan Anda di sini...&#10;&#10;Tips: Baris pertama otomatis menjadi Judul.&#10;Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipat di mode Smart Fold!" oninput="onEditorInput()"></textarea>
+        <div id="note-viewer" dir="auto" style="display: none;"></div>
       </div>
 
       <!-- Status Bar -->
@@ -1636,14 +1524,14 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
           </div>
           <span style="opacity: 0.3;">|</span>
           <div class="status-badge" style="cursor: pointer;" onclick="openCloudAuthModal()" title="Status Akun Cloud (Klik untuk buka)">
-            <span class="status-dot" id="cloud-status-dot" style="background-color: var(--success);"></span>
-            <span id="cloud-status-text">1 Antrean</span>
+            <span class="status-dot" id="cloud-status-dot" style="background-color: var(--text-muted);"></span>
+            <span id="cloud-status-text">Cloud</span>
           </div>
           <span style="opacity: 0.3;">|</span>
           <span id="mode-status-badge" style="font-weight: 700; cursor: pointer; color: var(--accent-text);" onclick="toggleEditViewMode()" title="Klik untuk berganti mode">✏️ Mode Edit (Bisa Menulis)</span>
         </div>
         <div>
-          <span id="stat-words">17 kata</span> • <span id="stat-chars">128 karakter</span>
+          <span id="stat-words">0 kata</span> • <span id="stat-chars">0 karakter</span>
         </div>
       </div>
     </main>
@@ -1731,136 +1619,8 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
   <div class="modal-backdrop" id="cloud-auth-modal">
     <div class="modal-dialog" style="max-width: 480px;">
       <div id="cloud-auth-modal-content">
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <!-- Header Akun Terhubung -->
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 0.65rem;">
-                  <div style="width: 42px; height: 42px; border-radius: 50%; background-color: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
-                    D
-                  </div>
-                  <div>
-                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">dafiqamir77</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">dafiqamir77@gmail.com</div>
-                  </div>
-                </div>
-                <span class="badge" style="background-color: rgba(16, 185, 129, 0.15); color: var(--success); font-size: 0.7rem; padding: 0.25rem 0.55rem; border-radius: 9999px; font-weight: 700;">● Terhubung</span>
-              </div>
-
-              <!-- Metadata Akun & Identitas -->
-              <div class="auth-info-card">
-                <div class="auth-info-row">
-                  <span class="auth-info-label">Status Sesi:</span>
-                  <span class="auth-info-value" style="color: var(--success);">Aktif (Persisten)</span>
-                </div>
-                <div class="auth-info-row">
-                  <span class="auth-info-label">User ID (Cloud):</span>
-                  <span class="auth-info-value auth-info-mono" style="font-size: 0.72rem; user-select: all;" title="e62d94c0-d324-4a29-a2f6-cdef7833ab60">e62d94c0-d324-4a29-a2f6-cdef7833ab60</span>
-                </div>
-                <div class="auth-info-row">
-                  <span class="auth-info-label">Email:</span>
-                  <span class="auth-info-value" style="font-size: 0.75rem; user-select: all;">dafiqamir77@gmail.com</span>
-                </div>
-                <div class="auth-info-row">
-                  <span class="auth-info-label">Device ID:</span>
-                  <span class="auth-info-value auth-info-mono" style="font-size: 0.72rem;">ft_dev_mv65oupl_bp...</span>
-                </div>
-                <div class="auth-info-row">
-                  <span class="auth-info-label">Penyimpanan Lokal:</span>
-                  <span class="auth-info-value" style="color: var(--success);">IndexedDB (100% Aman)</span>
-                </div>
-              </div>
-
-              <!-- Database Connectivity Panel -->
-              <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">🔌 Koneksi Database Cloud</span>
-                  <button type="button" class="btn" style="padding: 0.25rem 0.55rem; font-size: 0.72rem;" onclick="AuthManager.runDbVerification()">
-                    🔍 Uji Koneksi
-                  </button>
-                </div>
-                <div id="db-verify-output" style="font-size: 0.75rem; line-height: 1.4; color: var(--text-muted);">
-                  <span>Belum diverifikasi. Klik <strong>Uji Koneksi</strong> untuk memverifikasi jalur database &amp; RLS.</span>
-                </div>
-              </div>
-
-              <!-- Cloud Sync Panel (Phase 2) -->
-              
-          <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 0.4rem;">
-                <span style="font-size: 0.9rem;">🔄</span>
-                <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">Sinkronisasi Cloud</span>
-              </div>
-              <span class="badge" style="background-color: rgba(245, 158, 11, 0.15); color: #d97706; font-size: 0.68rem; padding: 0.2rem 0.5rem; font-weight: 700;">
-                ⏳ 1 Menunggu Kirim
-              </span>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.72rem; color: var(--text-muted);">
-              <div style="display: flex; justify-content: space-between;">
-                <span>Terakhir Tarik:</span>
-                <strong style="color: var(--text-main);">04.59.56</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span>Terakhir Kirim:</span>
-                <strong style="color: var(--text-main);">07.50.55</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span>Antrean Perubahan:</span>
-                <strong style="color: var(--text-main);">1 item</strong>
-              </div>
-              
-              <div style="display: flex; justify-content: space-between; color: #6366f1;">
-                <span>Item Tertahan (Fase 2.1):</span>
-                <strong>🛡️ 22 catatan</strong>
-              </div>
-              
-              
-            </div>
-
-            
-
-            <div style="display: flex; gap: 0.5rem; margin-top: 0.2rem;">
-              <button type="button" class="btn" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.4rem;" onclick="SyncManager.pull(true)">
-                ⬇️ Tarik dari Cloud
-              </button>
-              <button type="button" class="btn btn-primary" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.4rem;" onclick="SyncManager.push(true)">
-                ⬆️ Kirim ke Cloud
-              </button>
-            </div>
-          </div>
-        
-
-              <!-- Modal Actions -->
-              <div class="modal-actions" style="margin-top: 0.25rem; justify-content: space-between;">
-                <button type="button" class="btn btn-danger" onclick="AuthManager.logout()">Keluar (Logout)</button>
-                <button type="button" class="btn" onclick="closeCloudAuthModal()">Tutup</button>
-              </div>
-
-              
-          <details style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; font-size: 0.75rem;">
-            <summary style="cursor: pointer; color: var(--text-muted); font-weight: 600; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-              <span>⚙️ Pengaturan Lanjutan (Developer)</span>
-              <span class="badge" style="font-size: 0.65rem;">App-Owned</span>
-            </summary>
-            <div style="margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; background-color: var(--bg-input); padding: 0.75rem; border-radius: 0.6rem; border: 1px solid var(--border-color);">
-              <div class="form-group">
-                <label class="form-label" style="font-size: 0.72rem;">Supabase Project URL</label>
-                <input type="url" id="dev-supabase-url" class="form-input" style="font-size: 0.75rem; font-family: var(--font-mono);" value="" placeholder="https://ahsesujexmobusqljmjj.supabase.co">
-              </div>
-              <div class="form-group">
-                <label class="form-label" style="font-size: 0.72rem;">Supabase Publishable / Anon Key</label>
-                <input type="text" id="dev-supabase-key" class="form-input" style="font-size: 0.75rem; font-family: var(--font-mono);" value="" placeholder="sb_publishable_... atau anon key">
-              </div>
-              <div style="display: flex; gap: 0.35rem; margin-top: 0.25rem;">
-                <button type="button" class="btn btn-primary" style="font-size: 0.72rem; padding: 0.35rem 0.6rem; flex: 1; justify-content: center;" onclick="AuthManager.handleSaveOverride()">Terapkan Override</button>
-                
-              </div>
-            </div>
-          </details>
-        
-            </div>
-          </div>
+        <!-- Rendered dynamically by AuthManager -->
+      </div>
     </div>
   </div>
 
@@ -1875,7 +1635,7 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
       </p>
       <div class="modal-actions" style="margin-top: 0.75rem;">
         <button type="button" class="btn" onclick="rejectDatasetOwnership()">Batal / Tetap Offline</button>
-        <button type="button" class="btn btn-primary" onclick="approveDatasetOwnership()">Tautkan &amp; Sinkronkan</button>
+        <button type="button" class="btn btn-primary" onclick="approveDatasetOwnership()">Tautkan & Sinkronkan</button>
       </div>
     </div>
   </div>
@@ -1890,7 +1650,7 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
   </div>
 
   <!-- Custom Context Menu (Floating Menu untuk Desktop & Mobile) -->
-  <div id="context-menu" class="context-menu" style="display: none;"></div>
+  <div id="context-menu" class="context-menu"></div>
 
   <!-- IndexedDB & Application Engine (Pure Vanilla JS) -->
   <script>
@@ -2006,7 +1766,36 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
        1.05 CHANGE TRACKER & OUTBOX ENGINE (PHASE 2)
        ========================================================================== */
     const ChangeTracker = {
+      // Serialize queue updates for the same record. Multiple async save paths may
+      // overlap even though JavaScript itself runs on a single thread.
+      recordLocks: new Map(),
+      lastRecordFailure: null,
+
       async record(entity, entityId, operation) {
+        if (!entityId) return null;
+        const lockKey = `${entity}:${String(entityId)}`;
+        const previousLock = this.recordLocks.get(lockKey) || Promise.resolve();
+        let releaseLock;
+        const thisLock = new Promise(resolve => { releaseLock = resolve; });
+        this.recordLocks.set(lockKey, thisLock);
+
+        await previousLock;
+        try {
+          const result = await this._recordUnlocked(entity, entityId, operation);
+          if (result !== null && this.lastRecordFailure &&
+              this.lastRecordFailure.key === lockKey) {
+            this.lastRecordFailure = null;
+          }
+          return result;
+        } finally {
+          releaseLock();
+          if (this.recordLocks.get(lockKey) === thisLock) {
+            this.recordLocks.delete(lockKey);
+          }
+        }
+      },
+
+      async _recordUnlocked(entity, entityId, operation) {
         if (isApplyingRemoteChange || !entityId) return null;
         try {
           const allQueue = (await dbGetAll('changeQueue')) || [];
@@ -2048,46 +1837,48 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
           const matchingEvents = allQueue.filter(item =>
             item.entity === entity && String(item.entityId) === String(entityId) && item.status !== 'synced'
           );
-          // Prefer an unresolved conflict over older duplicate pending/failed events.
-          // Ordinary edits and bootstrap reconciliation must never clear a conflict implicitly.
-          const existing = matchingEvents.find(item => item.status === 'conflict') ||
-            matchingEvents.find(item => item.status === 'held') ||
-            matchingEvents[0] || null;
+          const activeEvents = matchingEvents.filter(item =>
+            item.status === 'pending' || item.status === 'failed'
+          );
+          const conflictEvent = matchingEvents.find(item => item.status === 'conflict') || null;
+          const heldEvent = matchingEvents.find(item => item.status === 'held') || null;
+
+          // Retire duplicate *active* outbox events only. Never delete conflict/held
+          // records here: they carry state that must remain under explicit control.
+          const removeExtraActiveEvents = async (keepId = null) => {
+            for (const queued of activeEvents) {
+              if (keepId === null || queued.id !== keepId) {
+                await dbDelete('changeQueue', queued.id);
+              }
+            }
+          };
+
+          // A conflict/held item must not be reactivated by ordinary typing or import.
+          // Remove active duplicates so Push cannot process stale events for that ID.
+          if (conflictEvent) {
+            await removeExtraActiveEvents();
+            return conflictEvent;
+          }
+          if (heldEvent) {
+            await removeExtraActiveEvents();
+            return heldEvent;
+          }
+
+          // If old versions already contain duplicate pending entries, use one
+          // canonical event. Prefer create so an unsynced record is not treated as
+          // several independent cloud writes.
+          const existing = activeEvents.find(item => item.operation === 'create') ||
+            activeEvents.find(item => item.operation === 'update') ||
+            activeEvents.find(item => item.operation === 'delete') || null;
 
           if (existing) {
-            if (existing.status === 'held') {
-              // Pertahankan status held pada artefak lama; jangan aktifkan kembali menjadi pending
-              return existing;
-            }
-            if (existing.status === 'conflict') {
-              // Konflik hanya boleh diselesaikan melalui ConflictManager, bukan record() biasa.
-              return existing;
-            }
             if (existing.operation === 'create') {
               if (operation === 'delete') {
                 const item = await dbGet(entity, entityId);
                 if (!item || (!item.version && !item.baseVersion)) {
-                  await dbDelete('changeQueue', existing.id);
+                  await removeExtraActiveEvents();
                   return null;
-                } else {
-                  existing.operation = 'delete';
-                  existing.timestamp = new Date().toISOString();
-                  existing.status = 'pending';
-                  delete existing.conflictReason;
-                  delete existing.lastError;
-                  await dbPut('changeQueue', existing);
-                  return existing;
                 }
-              } else {
-                existing.timestamp = new Date().toISOString();
-                existing.status = 'pending';
-                delete existing.conflictReason;
-                delete existing.lastError;
-                await dbPut('changeQueue', existing);
-                return existing;
-              }
-            } else if (existing.operation === 'update') {
-              if (operation === 'delete') {
                 existing.operation = 'delete';
               }
               existing.timestamp = new Date().toISOString();
@@ -2095,8 +1886,23 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
               delete existing.conflictReason;
               delete existing.lastError;
               await dbPut('changeQueue', existing);
+              await removeExtraActiveEvents(existing.id);
               return existing;
-            } else if (existing.operation === 'delete') {
+            }
+
+            if (existing.operation === 'update') {
+              if (operation === 'delete') existing.operation = 'delete';
+              existing.timestamp = new Date().toISOString();
+              existing.status = 'pending';
+              delete existing.conflictReason;
+              delete existing.lastError;
+              await dbPut('changeQueue', existing);
+              await removeExtraActiveEvents(existing.id);
+              return existing;
+            }
+
+            if (existing.operation === 'delete') {
+              await removeExtraActiveEvents(existing.id);
               delete existing.conflictReason;
               delete existing.lastError;
               return existing;
@@ -2127,6 +1933,14 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
           await dbPut('changeQueue', record);
           return record;
         } catch (e) {
+          const failureKey = `${entity}:${String(entityId)}`;
+          this.lastRecordFailure = {
+            key: failureKey,
+            entity,
+            entityId: String(entityId),
+            message: e && e.message ? e.message : String(e),
+            at: new Date().toISOString()
+          };
           console.warn('[ChangeTracker] Gagal mencatat perubahan:', e);
           return null;
         }
@@ -2144,6 +1958,86 @@ Gunakan tanda `- `, `* `, atau angka `1. ` untuk membuat daftar yang bisa dilipa
           if (!entity) return true;
           return item.entity === entity;
         });
+      },
+
+      async consolidatePendingEvents() {
+        // One active outbox event per entity+ID. Keep conflict/held records intact.
+        const all = (await dbGetAll('changeQueue')) || [];
+        const groups = new Map();
+        const protectedKeys = new Set(
+          all.filter(item => item.status === 'conflict' || item.status === 'held')
+            .map(item => `${item.entity}:${String(item.entityId)}`)
+        );
+        for (const item of all) {
+          if (item.status !== 'pending' && item.status !== 'failed') continue;
+          const key = `${item.entity}:${String(item.entityId)}`;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(item);
+        }
+
+        let removedCount = 0;
+        for (const [key, group] of groups.entries()) {
+          // Conflict and intentionally-held records must not have parallel active
+          // events that a later Push could accidentally pick up.
+          if (protectedKeys.has(key)) {
+            for (const queued of group) {
+              await dbDelete('changeQueue', queued.id);
+              removedCount++;
+            }
+            continue;
+          }
+          if (group.length < 2) continue;
+          const first = group[0];
+          const storeName = first.entity === 'notes' ? 'notes' : 'folders';
+          const localItem = await dbGet(storeName, first.entityId);
+
+          // A locally-created record deleted before its first cloud upload needs no
+          // tombstone. This mirrors the existing create-then-delete cancellation rule.
+          if (localItem && localItem.deleted_at && !localItem.version && !localItem.baseVersion) {
+            for (const queued of group) {
+              await dbDelete('changeQueue', queued.id);
+              removedCount++;
+            }
+            continue;
+          }
+
+          let canonicalOperation;
+          if (localItem && localItem.deleted_at) {
+            canonicalOperation = 'delete';
+          } else if (group.some(item => item.operation === 'create')) {
+            canonicalOperation = 'create';
+          } else if (group.some(item => item.operation === 'update')) {
+            canonicalOperation = 'update';
+          } else {
+            canonicalOperation = group[0].operation;
+          }
+
+          const sorted = [...group].sort((a, b) => {
+            const statusPriority = item => item.status === 'pending' ? 1 : 0;
+            const opPriority = item => item.operation === canonicalOperation ? 1 : 0;
+            return opPriority(b) - opPriority(a) || statusPriority(b) - statusPriority(a) ||
+              (new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+          });
+          const canonical = sorted[0];
+          canonical.operation = canonicalOperation;
+          canonical.status = group.some(item => item.status === 'pending') ? 'pending' : 'failed';
+          canonical.timestamp = sorted[0].timestamp || new Date().toISOString();
+          if (canonical.status === 'pending') {
+            delete canonical.lastError;
+          }
+          await dbPut('changeQueue', canonical);
+
+          for (const queued of group) {
+            if (queued.id !== canonical.id) {
+              await dbDelete('changeQueue', queued.id);
+              removedCount++;
+            }
+          }
+        }
+        if (removedCount > 0) {
+          console.info(`[ChangeTracker] Consolidated ${removedCount} duplicate active queue event(s).`);
+        }
+        return removedCount;
       },
 
       async markSynced(id) {
@@ -3185,8 +3079,6 @@ Daftar Tugas Contoh:
       );
     }
 
-
-
     function areFoldersSemanticallyEqual(f1, f2) {
       if (!f1 || !f2) return false;
       const name1 = (f1.name || '').trim();
@@ -4082,9 +3974,13 @@ Daftar Tugas Contoh:
             continue;
           } else {
             if (!localFolder || Number(cf.version || 1) > Number(localFolder.version || 0) || new Date(cf.updated_at).getTime() > Number(localFolder.updated_at || 0)) {
+              const wasApplyingRemoteChange = isApplyingRemoteChange;
               isApplyingRemoteChange = true;
-              await dbPut('folders', cloudToLocalFolder(cf));
-              isApplyingRemoteChange = false;
+              try {
+                await dbPut('folders', cloudToLocalFolder(cf));
+              } finally {
+                isApplyingRemoteChange = wasApplyingRemoteChange;
+              }
             }
           }
         }
@@ -4129,9 +4025,13 @@ Daftar Tugas Contoh:
             continue;
           } else {
             if (!localNote || Number(cn.version || 1) > Number(localNote.version || 0) || new Date(cn.updated_at).getTime() > Number(localNote.updated_at || 0)) {
+              const wasApplyingRemoteChange = isApplyingRemoteChange;
               isApplyingRemoteChange = true;
-              await dbPut('notes', cloudToLocalNote(cn));
-              isApplyingRemoteChange = false;
+              try {
+                await dbPut('notes', cloudToLocalNote(cn));
+              } finally {
+                isApplyingRemoteChange = wasApplyingRemoteChange;
+              }
             }
           }
         }
@@ -4200,6 +4100,10 @@ Daftar Tugas Contoh:
       },
 
       async _executePush(user, client) {
+        // Repair duplicate active outbox entries created by older builds/imports before
+        // taking the batch snapshot. This does not modify Cloud data by itself.
+        await ChangeTracker.consolidatePendingEvents();
+
         let pushSuccessCount = 0;
         let pushFailedCount = 0;
         let pushConflictCount = 0;
@@ -4600,29 +4504,41 @@ Daftar Tugas Contoh:
 
           // 1. Tarik dari cloud terlebih dahulu untuk rekonsiliasi awal
           await this._executePull(pre.user, pre.client);
+          const pullCompletedAt = new Date().toISOString();
+          this.lastPullAt = pullCompletedAt;
+          await dbPut('metadata', { key: 'last_pull_time', value: pullCompletedAt });
+
           // 2. Masukkan data lokal ke antrean
           await this.queueAllLocalDataForInitialSync();
           // 3. Kirim ke cloud
           const { pushSuccessCount, pushFailedCount, pushConflictCount } = await this._executePush(pre.user, pre.client);
 
-          const now = new Date().toISOString();
-          this.lastPullAt = now;
-          this.lastPushAt = now;
-          this.lastSyncAt = now;
-          await Promise.all([
-            dbPut('metadata', { key: 'last_pull_time', value: now }),
-            dbPut('metadata', { key: 'last_push_time', value: now }),
-            dbPut('metadata', { key: 'last_sync_time', value: now })
-          ]);
-          this.syncStatus = 'idle';
+          const attemptAt = new Date().toISOString();
+          this.lastPushAt = attemptAt;
+          await dbPut('metadata', { key: 'last_push_time', value: attemptAt });
 
-          if (isManual) {
-            if (ConflictManager.getConflictCount() > 0) {
-              showToast(`⚠️ Tautan selesai. Terdapat ${ConflictManager.getConflictCount()} konflik data belum diputuskan.`, 'warning');
-              ConflictManager.openDialog();
-            } else {
-              showToast('✓ Rekonsiliasi awal cloud berhasil!');
+          const unresolvedConflicts = ConflictManager.getConflictCount();
+          if (pushFailedCount > 0) {
+            // Preserve pending/failed queue items for an explicit retry; do not mark the
+            // initial reconciliation as clean just because the overall function returned.
+            this.syncStatus = 'error';
+            if (isManual) {
+              showToast(`⚠️ Rekonsiliasi awal belum lengkap: ${pushSuccessCount} terkirim, ${pushFailedCount} gagal, ${pushConflictCount} konflik. Item gagal tetap lokal/di antrean untuk dicoba lagi.`, 'warning');
             }
+          } else if (pushConflictCount > 0 || unresolvedConflicts > 0) {
+            this.syncStatus = 'idle';
+            if (isManual) {
+              showToast(`⚠️ Rekonsiliasi awal selesai dengan ${Math.max(pushConflictCount, unresolvedConflicts)} konflik yang perlu diputuskan. ${pushSuccessCount} perubahan berhasil dikirim.`, 'warning');
+            }
+          } else {
+            this.syncStatus = 'idle';
+            this.lastSyncAt = attemptAt;
+            await dbPut('metadata', { key: 'last_sync_time', value: attemptAt });
+            if (isManual) showToast('✓ Rekonsiliasi awal cloud berhasil!');
+          }
+
+          if (unresolvedConflicts > 0 || pushConflictCount > 0) {
+            ConflictManager.openDialog();
           }
         } catch (err) {
           console.error('[SyncManager] Error bootstrapSync:', err);
@@ -4775,7 +4691,7 @@ Daftar Tugas Contoh:
               </div>
             ` : ''}
 
-            <div style="display: flex; gap: 0.5rem; margin-top: 0.2rem;">
+            <div style="display: gap: 0.5rem; margin-top: 0.2rem; display: flex;">
               <button type="button" class="btn" style="flex: 1; justify-content: center; font-size: 0.75rem; padding: 0.4rem;" onclick="SyncManager.pull(true)" ${this.isSyncing ? 'disabled' : ''}>
                 ${(this.isSyncing && this.activeOperation === 'pull') ? '⏳ Menarik dari Cloud...' : '⬇️ Tarik dari Cloud'}
               </button>
@@ -4829,7 +4745,7 @@ Daftar Tugas Contoh:
       {
         id: 'justify',
         name: 'Rata Kanan-Kiri (Justify)',
-        icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>',
+        icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="13" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>',
         toast: '🟰 Rata Kanan-Kiri (Justify) Aktif'
       }
     ];
@@ -5179,7 +5095,10 @@ Daftar Tugas Contoh:
       note.updated_at = Date.now();
 
       await dbPut('notes', note);
-      await ChangeTracker.record('notes', note.id, 'update');
+      const queueRecord = await ChangeTracker.record('notes', note.id, 'update');
+      if (queueRecord === null && !isApplyingRemoteChange) {
+        showToast('Catatan tersimpan di perangkat, tetapi antrean cloud gagal dicatat. Periksa penyimpanan lalu coba edit lagi sebelum menekan Kirim.', 'danger');
+      }
       // Re-sort notes
       notes.sort((a, b) => b.updated_at - a.updated_at);
       renderFolderChips();
@@ -6201,6 +6120,5 @@ Daftar Tugas Contoh:
     // Start App
     window.addEventListener('DOMContentLoaded', initApp);
   </script>
-
-
-<div id="app-toast" style="position: fixed; bottom: 2.5rem; right: 1.5rem; background: var(--bg-sidebar); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 700; box-shadow: rgba(0, 0, 0, 0.2) 0px 10px 25px; transform: translateY(100px); opacity: 0; transition: 0.25s; z-index: 999; pointer-events: none; display: flex; align-items: center; gap: 0.5rem;">✏️ Mode Edit Aktif (Siap Mengetik)</div></body></html>
+</body>
+</html>
