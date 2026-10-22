@@ -39,6 +39,11 @@ jobs:
         run: |
           set -euo pipefail
           test -s index.html
+          test -s sw.js
+          test -s manifest.webmanifest
+          test -s icon.svg
+          test -s icon-192.png
+          test -s icon-512.png
           test -s assets/icon.png
           node <<'NODE'
           const fs = require('fs');
@@ -53,7 +58,16 @@ jobs:
             new Function(script);
             console.log(`Inline script ${index + 1}: syntax OK`);
           });
-          console.log(`Validated ${scripts.length} inline script(s).`);
+          const manifest = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
+          if (!manifest.name || !manifest.start_url || !manifest.display) {
+            throw new Error('PWA manifest is missing installability fields');
+          }
+          for (const icon of manifest.icons || []) {
+            const iconPath = icon.src.replace(/^\.\//, '');
+            if (!fs.existsSync(iconPath)) throw new Error(`Missing PWA icon: ${icon.src}`);
+          }
+          new Function(fs.readFileSync('sw.js', 'utf8'));
+          console.log(`Validated ${scripts.length} inline script(s), PWA manifest, icons and service worker syntax.`);
           NODE
 
       - name: Package Web App and Generate Android Icons

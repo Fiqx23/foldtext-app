@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="FoldText Lite - Aplikasi Catatan Personal Ultra-Ringan dengan Hierarki Folder & Smart Folding">
   <!-- PWA Meta & Manifest -->
-  <link id="manifest-placeholder" rel="manifest">
+  <link id="manifest-placeholder" rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -6004,53 +6006,87 @@ Daftar Tugas Contoh:
 
     let deferredPrompt = null;
 
+    function isPWAStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+    }
+
     function initPWA() {
-      const currentFileName = window.location.pathname.split('/').pop() || './';
-      const manifestData = {
-        name: "FoldText Lite",
-        short_name: "FoldText",
-        description: "Aplikasi Catatan Personal Ultra-Ringan dengan Hierarki Folder & Smart Folding",
-        start_url: currentFileName,
-        display: "standalone",
-        background_color: "#0b0f19",
-        theme_color: "#6366f1",
-        icons: [
-          {
-            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text y='.7em' x='50%' text-anchor='middle' font-size='60'>📑</text></svg>",
-            sizes: "192x192 512x512",
-            type: "image/svg+xml"
-          }
-        ]
-      };
-
-      const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-      const manifestLink = document.getElementById('manifest-placeholder');
-      if (manifestLink) {
-        manifestLink.setAttribute('href', URL.createObjectURL(manifestBlob));
+      const installBtn = document.getElementById('pwa-install-btn');
+      if (installBtn) {
+        installBtn.style.display = isPWAStandalone() ? 'none' : 'inline-flex';
       }
 
-      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {
-          // sw.js optional if deployed on web server
-        });
+      // GitHub Pages uses a repository subpath (for example /foldtext-app/).
+      // Resolve paths from the current page instead of assuming the domain root.
+      if (
+        'serviceWorker' in navigator &&
+        (window.location.protocol === 'https:' || window.location.hostname === 'localhost')
+      ) {
+        const workerUrl = new URL('./sw.js', document.baseURI);
+        const appScopeUrl = new URL('./', document.baseURI);
+        navigator.serviceWorker.register(workerUrl.href, { scope: appScopeUrl.pathname })
+          .then(registration => {
+            registration.update().catch(() => {});
+          })
+          .catch(error => {
+            console.warn('[FoldText PWA] Service worker belum aktif:', error);
+          });
       }
 
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const installBtn = document.getElementById('pwa-install-btn');
-        if (installBtn) installBtn.style.display = 'inline-flex';
+      window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        deferredPrompt = event;
+        if (installBtn && !isPWAStandalone()) {
+          installBtn.style.display = 'inline-flex';
+          installBtn.title = 'Pasang FoldText Lite';
+        }
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        if (installBtn) installBtn.style.display = 'none';
+        showToast('✓ FoldText Lite berhasil dipasang!');
       });
     }
 
-    function installPWA() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          deferredPrompt = null;
-          const installBtn = document.getElementById('pwa-install-btn');
+    async function installPWA() {
+      const installBtn = document.getElementById('pwa-install-btn');
+
+      if (isPWAStandalone()) {
+        showToast('FoldText Lite sudah berjalan sebagai aplikasi.');
+        if (installBtn) installBtn.style.display = 'none';
+        return;
+      }
+
+      if (!deferredPrompt) {
+        showToast(
+          'Untuk memasang di Edge: buka menu ⋯ → Apps/Aplikasi → Install this site as an app. Di Android, cari opsi Pasang aplikasi atau Tambahkan ke layar utama. Buka situs saat online dahulu agar cache offline terisi.',
+          'info'
+        );
+        return;
+      }
+
+      const promptEvent = deferredPrompt;
+      deferredPrompt = null;
+
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+
+        if (choice && choice.outcome === 'accepted') {
           if (installBtn) installBtn.style.display = 'none';
-        });
+          showToast('✓ Permintaan pemasangan FoldText Lite diterima.');
+        } else {
+          if (installBtn) installBtn.style.display = 'inline-flex';
+          showToast('Pemasangan dibatalkan. Kamu masih bisa memasang lewat menu Edge.', 'info');
+        }
+      } catch (error) {
+        console.warn('[FoldText PWA] Prompt pemasangan tidak tersedia:', error);
+        showToast(
+          'Buka menu Edge ⋯ → Apps/Aplikasi → Install this site as an app untuk memasang FoldText Lite.',
+          'info'
+        );
       }
     }
 
