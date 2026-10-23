@@ -15,7 +15,7 @@
   <meta name="theme-color" content="#0b0f19">
   <title>FoldText Lite</title>
   <!-- Supabase JS Client v2 (Phase A: Cloud Foundation) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg-main: #f8fafc;
@@ -4801,10 +4801,6 @@ Daftar Tugas Contoh:
         notes.push(welcomeNote);
       }
 
-      // Inisialisasi Conflict & Sync Engine
-      await ConflictManager.init();
-      await SyncManager.init();
-
       // Sort notes by updated_at descending
       notes.sort((a, b) => b.updated_at - a.updated_at);
 
@@ -4815,6 +4811,18 @@ Daftar Tugas Contoh:
       if (notes.length > 0) {
         selectNote(notes[0].id);
       }
+
+      // Startup priority: show the local notes UI first. Conflict/sync metadata is
+      // background work and must not block the first usable screen.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          ConflictManager.init()
+            .then(() => SyncManager.init())
+            .catch(error => {
+              console.warn('[FoldText Startup] Gagal memuat status konflik/sinkronisasi:', error);
+            });
+        });
+      });
 
       // Pasang event listener status jaringan (Manual Cloud Sync only)
       window.addEventListener('online', () => {
