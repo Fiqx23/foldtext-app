@@ -15,7 +15,7 @@
   <meta name="theme-color" content="#0b0f19">
   <title>FoldText Lite</title>
   <!-- Supabase JS Client v2 (Phase A: Cloud Foundation) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase SDK is loaded on demand after the local app shell is rendered. -->
   <style>
     :root {
       --bg-main: #f8fafc;
@@ -2111,6 +2111,41 @@
       return dId;
     }
 
+    // Load the cloud SDK only when local UI startup has finished.
+    // The initial notes screen must not wait for the Supabase CDN.
+    let supabaseSdkLoadPromise = null;
+
+    function ensureSupabaseSdkLoaded() {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        return Promise.resolve(window.supabase);
+      }
+      if (supabaseSdkLoadPromise) return supabaseSdkLoadPromise;
+
+      supabaseSdkLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.async = true;
+        script.dataset.foldtextSupabaseSdk = 'true';
+        script.onload = () => {
+          if (window.supabase && typeof window.supabase.createClient === 'function') {
+            resolve(window.supabase);
+          } else {
+            reject(new Error('SDK Supabase selesai dimuat tetapi createClient tidak tersedia.'));
+          }
+        };
+        script.onerror = () => {
+          script.remove();
+          reject(new Error('SDK Supabase tidak dapat dimuat dari CDN.'));
+        };
+        document.head.appendChild(script);
+      }).catch(error => {
+        supabaseSdkLoadPromise = null;
+        throw error;
+      });
+
+      return supabaseSdkLoadPromise;
+    }
+
     const AuthManager = {
       client: null,
       currentUser: null,
@@ -2209,6 +2244,18 @@
         const config = this.getConfig();
         if (!config.isConfigured) {
           this.authStatus = 'unconfigured';
+          this.renderUI();
+          return;
+        }
+
+        // This runs after the local notes screen has rendered. Loading the cloud
+        // SDK here keeps network/CDN latency out of the critical startup path.
+        try {
+          await ensureSupabaseSdkLoaded();
+        } catch (sdkError) {
+          console.warn('[FoldText Auth] SDK Supabase belum tersedia:', sdkError);
+          this.authStatus = 'offline';
+          this.lastError = 'Fitur cloud belum tersedia. Catatan lokal tetap bisa digunakan.';
           this.renderUI();
           return;
         }

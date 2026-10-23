@@ -3,7 +3,7 @@
  * caching index.html also caches the visual interface.
  */
 const CACHE_PREFIX = 'foldtext-app-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-10-23-v4';
+const CACHE_NAME = CACHE_PREFIX + '2026-10-23-v5';
 const APP_BASE_URL = new URL('./', self.registration.scope);
 const INDEX_URL = new URL('index.html', APP_BASE_URL).href;
 const MANIFEST_URL = new URL('manifest.json', APP_BASE_URL).href;
@@ -23,17 +23,8 @@ self.addEventListener('install', event => {
     // Install succeeds only after the complete first-party app shell is cached.
     await cache.addAll(STATIC_URLS);
 
-    // Cache the optional SDK opportunistically. It is only needed for cloud features;
-    // failure here must never block offline note-taking or app installation.
-    try {
-      const request = new Request(SUPABASE_SDK_URL, { mode: 'no-cors', cache: 'reload' });
-      const response = await fetch(request);
-      if (response && (response.ok || response.type === 'opaque')) {
-        await cache.put(request, response.clone());
-      }
-    } catch (error) {
-      // Offline/local-first functionality remains available if the CDN is unreachable.
-    }
+    // Do not fetch the cloud SDK during worker installation. It is cached
+    // by the runtime fetch handler only if/when the app actually requests it.
 
     await self.skipWaiting();
   })());
