@@ -3,7 +3,7 @@
  * caching index.html also caches the visual interface.
  */
 const CACHE_PREFIX = 'foldtext-app-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-10-23-v2';
+const CACHE_NAME = CACHE_PREFIX + '2026-10-23-v3';
 const APP_BASE_URL = new URL('./', self.registration.scope);
 const INDEX_URL = new URL('index.html', APP_BASE_URL).href;
 const MANIFEST_URL = new URL('manifest.json', APP_BASE_URL).href;
