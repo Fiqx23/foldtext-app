@@ -6,7 +6,7 @@ const CACHE_PREFIX = 'foldtext-app-shell-';
 const CACHE_NAME = CACHE_PREFIX + '2026-10-22-v1';
 const APP_BASE_URL = new URL('./', self.registration.scope);
 const INDEX_URL = new URL('index.html', APP_BASE_URL).href;
-const MANIFEST_URL = new URL('manifest.webmanifest', APP_BASE_URL).href;
+const MANIFEST_URL = new URL('manifest.json', APP_BASE_URL).href;
 const STATIC_URLS = [
   APP_BASE_URL.href,
   INDEX_URL,

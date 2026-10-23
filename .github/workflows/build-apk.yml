@@ -40,7 +40,7 @@ jobs:
           set -euo pipefail
           test -s index.html
           test -s sw.js
-          test -s manifest.webmanifest
+          test -s manifest.json
           test -s icon.svg
           test -s icon-192.png
           test -s icon-512.png
@@ -58,7 +58,7 @@ jobs:
             new Function(script);
             console.log(`Inline script ${index + 1}: syntax OK`);
           });
-          const manifest = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
           if (!manifest.name || !manifest.start_url || !manifest.display) {
             throw new Error('PWA manifest is missing installability fields');
           }
