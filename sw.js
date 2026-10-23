@@ -3,7 +3,7 @@
  * caching index.html also caches the visual interface.
  */
 const CACHE_PREFIX = 'foldtext-app-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-10-23-v5';
+const CACHE_NAME = CACHE_PREFIX + '2026-10-23-v6';
 const APP_BASE_URL = new URL('./', self.registration.scope);
 const INDEX_URL = new URL('index.html', APP_BASE_URL).href;
 const MANIFEST_URL = new URL('manifest.json', APP_BASE_URL).href;
@@ -76,34 +76,12 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (!isWithinAppScope(url)) return;
 
-  // App-shell navigation is cache-first: show the last cached UI immediately,
-  // then refresh it in the background. Network latency must not block opening
-  // a local-first notes app when a usable shell is already present.
+  // App-shell navigation is cache-first. A warm install should not download the
+  // full HTML document on every launch. Deployments bump CACHE_NAME, install the
+  // new shell, and remove older app caches during activation.
   if (request.mode === 'navigate') {
-    const cachePromise = caches.open(CACHE_NAME);
-    const networkRefresh = fetch(request)
-      .then(async response => {
-        if (response && response.ok) {
-          const cache = await cachePromise;
-          await cache.put(request, response.clone());
-
-          // Keep both GitHub Pages entry paths fresh for offline fallback.
-          const indexPath = new URL(INDEX_URL).pathname;
-          if (url.pathname === APP_BASE_URL.pathname || url.pathname === indexPath) {
-            await cache.put(APP_BASE_URL.href, response.clone());
-            await cache.put(INDEX_URL, response.clone());
-          }
-        }
-        return response;
-      })
-      .catch(() => null);
-
-    // Keep the service worker alive long enough to finish the background update,
-    // without making the page wait for that update before receiving the cache hit.
-    event.waitUntil(networkRefresh.then(() => undefined));
-
     event.respondWith((async () => {
-      const cache = await cachePromise;
+      const cache = await caches.open(CACHE_NAME);
       const cachedResponse =
         await cache.match(request) ||
         await cache.match(APP_BASE_URL.href) ||
@@ -111,14 +89,25 @@ self.addEventListener('fetch', event => {
 
       if (cachedResponse) return cachedResponse;
 
-      // First-ever visit or cleared storage: use network if possible.
-      const networkResponse = await networkRefresh;
-      if (networkResponse) return networkResponse;
+      // Network is a fallback only when no cached shell exists.
+      try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+          await cache.put(request, response.clone());
 
-      return new Response(
-        'FoldText Lite belum memiliki cache offline. Buka aplikasi saat online satu kali, lalu coba lagi.',
-        { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
-      );
+          const indexPath = new URL(INDEX_URL).pathname;
+          if (url.pathname === APP_BASE_URL.pathname || url.pathname === indexPath) {
+            await cache.put(APP_BASE_URL.href, response.clone());
+            await cache.put(INDEX_URL, response.clone());
+          }
+        }
+        return response;
+      } catch (error) {
+        return new Response(
+          'FoldText Lite belum memiliki cache offline. Buka aplikasi saat online satu kali, lalu coba lagi.',
+          { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
+        );
+      }
     })());
     return;
   }
