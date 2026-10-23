@@ -4863,10 +4863,15 @@ Daftar Tugas Contoh:
       // background work and must not block the first usable screen.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
+          // Finish local-only status work first, then initialize cloud auth.
+          // This gives the first usable notes screen priority over SDK loading.
           ConflictManager.init()
             .then(() => SyncManager.init())
             .catch(error => {
               console.warn('[FoldText Startup] Gagal memuat status konflik/sinkronisasi:', error);
+            })
+            .finally(() => {
+              AuthManager.init();
             });
         });
       });
@@ -4881,8 +4886,7 @@ Daftar Tugas Contoh:
         if (typeof SyncManager !== 'undefined') SyncManager.updateStatusUI();
       });
 
-      // Inisialisasi status sesi Cloud & Supabase Auth (Phase A & 2)
-      AuthManager.init();
+      // AuthManager.init() starts after the local screen and metadata are ready.
     }
 
     /* ==========================================================================
@@ -4973,6 +4977,7 @@ Daftar Tugas Contoh:
 
         const item = document.createElement('div');
         item.className = `note-item ${note.id === activeNoteId ? 'active' : ''}`;
+        item.dataset.noteId = String(note.id);
         item.title = 'Klik untuk membuka. Klik kanan / tahan untuk opsi.';
         item.onclick = () => {
           selectNote(note.id);
@@ -5034,9 +5039,14 @@ Daftar Tugas Contoh:
         renderSmartFolding();
       }
 
-      // Update UI active highlight
-      document.querySelectorAll('.note-item').forEach(el => el.classList.remove('active'));
-      renderNotesList();
+      // Update the active marker in place. Rebuilding the full notes list here
+      // recreated every row and its context-menu handlers on each note selection.
+      const previousActiveItem = notesListContainer.querySelector('.note-item.active');
+      if (previousActiveItem) previousActiveItem.classList.remove('active');
+
+      const nextActiveItem = Array.from(notesListContainer.querySelectorAll('.note-item'))
+        .find(el => el.dataset.noteId === String(noteId));
+      if (nextActiveItem) nextActiveItem.classList.add('active');
     }
 
     async function createNewNote() {
@@ -6080,9 +6090,22 @@ Daftar Tugas Contoh:
       ) {
         const workerUrl = new URL('./sw.js', document.baseURI);
         const appScopeUrl = new URL('./', document.baseURI);
-        navigator.serviceWorker.register(workerUrl.href, { scope: appScopeUrl.pathname })
+        navigator.serviceWorker.getRegistration(appScopeUrl.href)
           .then(registration => {
-            registration.update().catch(() => {});
+            if (!registration) {
+              // First visit: register immediately so the offline shell can be cached.
+              return navigator.serviceWorker.register(workerUrl.href, { scope: appScopeUrl.pathname });
+            }
+
+            // Existing installs keep using their cache-first shell. Check for updates
+            // after the app has had time to render instead of on the critical path.
+            const checkForUpdate = () => registration.update().catch(() => {});
+            if ('requestIdleCallback' in window) {
+              window.requestIdleCallback(checkForUpdate, { timeout: 5000 });
+            } else {
+              window.setTimeout(checkForUpdate, 1500);
+            }
+            return registration;
           })
           .catch(error => {
             console.warn('[FoldText PWA] Service worker belum aktif:', error);
