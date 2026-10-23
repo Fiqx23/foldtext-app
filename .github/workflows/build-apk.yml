@@ -5,6 +5,11 @@ on:
     branches: [ main, master ]
     paths-ignore:
       - 'README.md'
+      # GitHub Pages performance-only changes should not trigger a debug APK build.
+      # Use workflow_dispatch when an intentional APK rebuild is needed.
+      - 'index.html'
+      - 'sw.js'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 permissions:

@@ -4811,6 +4811,13 @@ Daftar Tugas Contoh:
     const statWords = document.getElementById('stat-words');
     const statChars = document.getElementById('stat-chars');
 
+    // Keep the performance-only changes scoped to the hosted GitHub Pages PWA.
+    // The packaged Android app shares this HTML source but must retain its existing runtime.
+    function isGitHubPagesRuntime() {
+      return window.location.hostname === 'fiqx23.github.io' &&
+        window.location.pathname.startsWith('/foldtext-app/');
+    }
+
     async function initApp() {
       await openDB();
       initTheme();
@@ -4871,7 +4878,7 @@ Daftar Tugas Contoh:
               console.warn('[FoldText Startup] Gagal memuat status konflik/sinkronisasi:', error);
             })
             .finally(() => {
-              AuthManager.init();
+              if (isGitHubPagesRuntime()) AuthManager.init();
             });
         });
       });
@@ -4886,7 +4893,8 @@ Daftar Tugas Contoh:
         if (typeof SyncManager !== 'undefined') SyncManager.updateStatusUI();
       });
 
-      // AuthManager.init() starts after the local screen and metadata are ready.
+      // Keep the packaged/local runtime's existing auth initialization timing.
+      if (!isGitHubPagesRuntime()) AuthManager.init();
     }
 
     /* ==========================================================================
@@ -5039,14 +5047,20 @@ Daftar Tugas Contoh:
         renderSmartFolding();
       }
 
-      // Update the active marker in place. Rebuilding the full notes list here
-      // recreated every row and its context-menu handlers on each note selection.
-      const previousActiveItem = notesListContainer.querySelector('.note-item.active');
-      if (previousActiveItem) previousActiveItem.classList.remove('active');
+      if (isGitHubPagesRuntime()) {
+        // Update the active marker in place. Rebuilding the full notes list here
+        // recreated every row and its context-menu handlers on each note selection.
+        const previousActiveItem = notesListContainer.querySelector('.note-item.active');
+        if (previousActiveItem) previousActiveItem.classList.remove('active');
 
-      const nextActiveItem = Array.from(notesListContainer.querySelectorAll('.note-item'))
-        .find(el => el.dataset.noteId === String(noteId));
-      if (nextActiveItem) nextActiveItem.classList.add('active');
+        const nextActiveItem = Array.from(notesListContainer.querySelectorAll('.note-item'))
+          .find(el => el.dataset.noteId === String(noteId));
+        if (nextActiveItem) nextActiveItem.classList.add('active');
+      } else {
+        // Preserve existing behavior for packaged/local builds.
+        document.querySelectorAll('.note-item').forEach(el => el.classList.remove('active'));
+        renderNotesList();
+      }
     }
 
     async function createNewNote() {
