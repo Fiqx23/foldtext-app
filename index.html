@@ -6050,6 +6050,64 @@ Daftar Tugas Contoh:
       });
     }
 
+    function getInstallGuidance() {
+      const ua = navigator.userAgent || '';
+      const platform = navigator.platform || '';
+      const isIOS = /iPad|iPhone|iPod/i.test(ua) ||
+        (platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isAndroid = /Android/i.test(ua);
+      const isSamsung = /SamsungBrowser/i.test(ua);
+      const isFirefox = /Firefox|FxiOS/i.test(ua);
+      const isEdge = /EdgA|EdgiOS|Edg\//i.test(ua);
+      const isOpera = /OPR|Opera/i.test(ua);
+      const isChrome = /Chrome|CriOS|Chromium/i.test(ua) && !isEdge && !isOpera;
+      const isSafari = /Safari/i.test(ua) &&
+        !/(Chrome|CriOS|Chromium|Edg|Firefox|FxiOS|OPR|Opera|SamsungBrowser)/i.test(ua);
+
+      const intro = 'Browser ini tidak menyediakan dialog pemasangan langsung dari tombol halaman. Coba langkah berikut:';
+      if (isIOS) {
+        return intro + '\n\n' +
+          'iPhone/iPad: buka menu Bagikan (Share) → Tambahkan ke Layar Utama (Add to Home Screen) → Tambah. Jika pilihan itu tidak tersedia, buka situs ini di Safari lalu ulangi.';
+      }
+      if (isAndroid && isSamsung) {
+        return intro + '\n\n' +
+          'Samsung Internet: buka menu ☰ → Add page to / Tambahkan halaman ke → Home screen / Layar utama. Nama menu dapat berbeda menurut versi browser.';
+      }
+      if (isAndroid && isFirefox) {
+        return intro + '\n\n' +
+          'Firefox Android: buka menu ⋮, lalu pilih Install / Pasang atau Add to Home screen / Tambahkan ke layar utama jika tersedia.';
+      }
+      if (isAndroid && isEdge) {
+        return intro + '\n\n' +
+          'Edge Android: buka menu ⋯, lalu cari Install / Pasang atau Add to phone / Tambahkan ke layar utama.';
+      }
+      if (isAndroid && isChrome) {
+        return intro + '\n\n' +
+          'Chrome Android: buka menu ⋮ → Install app / Pasang aplikasi. Jika pilihan itu tidak ada, coba Tambahkan ke layar utama. Buka situs saat online dan muat ulang terlebih dahulu.';
+      }
+      if (isAndroid) {
+        return intro + '\n\n' +
+          'Android: buka menu browser dan cari Install app / Pasang aplikasi atau Add to Home screen / Tambahkan ke layar utama. Jika tidak ada, coba Chrome atau Samsung Internet.';
+      }
+      if (isSafari && /Macintosh|Mac OS X/i.test(ua)) {
+        return intro + '\n\n' +
+          'Safari di macOS Sonoma atau lebih baru: pilih File → Add to Dock / Tambahkan ke Dock.';
+      }
+      if (isEdge) {
+        return intro + '\n\n' +
+          'Microsoft Edge: buka menu ⋯ → Apps / Aplikasi → Install this site as an app / Instal situs ini sebagai aplikasi.';
+      }
+      if (isChrome) {
+        return intro + '\n\n' +
+          'Chrome desktop: cari ikon Install di bilah alamat atau buka menu ⋮ dan cari Install page as app / Pasang halaman sebagai aplikasi. Jika opsi tidak ada, periksa status PWA di DevTools → Application.';
+      }
+      if (isFirefox) {
+        return 'Firefox desktop belum menyediakan pemasangan PWA bawaan melalui web manifest. Gunakan Chrome atau Edge untuk memasang FoldText sebagai aplikasi; di Firefox, situs tetap dapat disimpan sebagai bookmark.';
+      }
+      return intro + '\n\n' +
+        'Buka menu browser dan cari opsi Install app / Pasang aplikasi atau Add to Home screen / Tambahkan ke layar utama. Jika opsi itu tidak tersedia pada desktop, gunakan Chrome/Edge; pada iPhone/iPad, gunakan menu Bagikan.';
+    }
+
     async function installPWA() {
       const installBtn = document.getElementById('pwa-install-btn');
 
@@ -6060,10 +6118,7 @@ Daftar Tugas Contoh:
       }
 
       if (!deferredPrompt) {
-        showToast(
-          'Untuk memasang di Edge: buka menu ⋯ → Apps/Aplikasi → Install this site as an app. Di Android, cari opsi Pasang aplikasi atau Tambahkan ke layar utama. Buka situs saat online dahulu agar cache offline terisi.',
-          'info'
-        );
+        window.alert(getInstallGuidance());
         return;
       }
 
@@ -6079,14 +6134,11 @@ Daftar Tugas Contoh:
           showToast('✓ Permintaan pemasangan FoldText Lite diterima.');
         } else {
           if (installBtn) installBtn.style.display = 'inline-flex';
-          showToast('Pemasangan dibatalkan. Kamu masih bisa memasang lewat menu Edge.', 'info');
+          showToast('Pemasangan dibatalkan.');
         }
       } catch (error) {
         console.warn('[FoldText PWA] Prompt pemasangan tidak tersedia:', error);
-        showToast(
-          'Buka menu Edge ⋯ → Apps/Aplikasi → Install this site as an app untuk memasang FoldText Lite.',
-          'info'
-        );
+        window.alert(getInstallGuidance());
       }
     }
 
